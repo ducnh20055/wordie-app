@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "818943420422",
+    "project_id": "wordie-4ce20",
+    "storage_bucket": "wordie-4ce20.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:818943420422:android:5c15f3a2b697516e1bbb87",
+        "android_client_info": {
+          "package_name": "com.example.wordie"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBehnnYBHpvIHbVTlXhUrtNKqHe2XRgP-A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
