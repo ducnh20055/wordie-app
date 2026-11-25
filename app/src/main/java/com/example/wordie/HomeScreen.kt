@@ -1,5 +1,6 @@
 package com.example.wordie
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -39,11 +41,13 @@ import com.example.wordie.ui.theme.WordieTheme
 
 @Composable
 fun HomeScreen(
+    playerName: String = "TOMMY",
     playerLevel: String,
     isDarkMode: Boolean,
     isPremium: Boolean,
     lessons: List<Lesson>,
     lessonsDone: Int = 0,
+    stars: Int = 0,
     onLessonClick: (lesson: Lesson) -> Unit,
     onPremiumClick: () -> Unit,
     onTabClick: (tab: String) -> Unit,
@@ -55,10 +59,12 @@ fun HomeScreen(
     val orangeDark = Color(0xFFE56E00)
     val orangeLightBg = Color(0xFFFFF1E0)
     val orangeShadow = Color(0xFFC85A00)
-    val bgColor = if (isDarkMode) Color(0xFF1A1A1A) else Color.White
+
+    val kidBg = if (isDarkMode) Color(0xFF1A1A1A) else Color(0xFFFFF8E1)
     val cardBg = if (isDarkMode) Color(0xFF2D2D2D) else orangeLightBg
     val textColor = if (isDarkMode) Color.White else Color(0xFF333333)
     val subTextColor = if (isDarkMode) Color(0xFFBDBDBD) else Color(0xFF757575)
+
     var selectedTab by remember { mutableStateOf("home") }
     var showMenu by remember { mutableStateOf(false) }
 
@@ -67,8 +73,9 @@ fun HomeScreen(
     val progressFraction = if (totalLessons > 0) (safeLessonsDone.toFloat() / totalLessons.toFloat()).coerceIn(0f, 1f) else 0f
     val percentage = (progressFraction * 100).toInt()
 
-    Column(modifier = Modifier.fillMaxSize().background(bgColor)) {
+    Column(modifier = Modifier.fillMaxSize().background(kidBg)) {
         Spacer(modifier = Modifier.height(16.dp))
+
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
             Text(text = "LESSONS", fontFamily = playfulFont, fontWeight = FontWeight.Bold, fontSize = 32.sp, letterSpacing = 1.sp, color = orangeMain, style = TextStyle(shadow = Shadow(color = orangeShadow, offset = Offset(0f, 4f), blurRadius = 0f)))
             Spacer(modifier = Modifier.weight(1f))
@@ -85,10 +92,61 @@ fun HomeScreen(
                 MenuDropdown(expanded = showMenu, isDarkMode = isDarkMode, onDismiss = { showMenu = false }, onThemeToggle = { onThemeToggle(it) }, onLanguageClick = { showMenu = false }, onHelpClick = { showMenu = false }, onLogoutClick = { showMenu = false; onLogoutClick() })
             }
         }
-        Spacer(modifier = Modifier.height(4.dp))
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // BANNER LINH VẬT WORDIE CHÀO BẠN
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(3.dp, RoundedCornerShape(20.dp))
+                    .background(cardBg, RoundedCornerShape(20.dp))
+                    .padding(12.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.wordie_happy),
+                    contentDescription = "Mascot",
+                    modifier = Modifier.size(54.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "HI ${playerName.uppercase()}! 🦊",
+                        fontFamily = playfulFont,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        color = orangeMain
+                    )
+                    Text(
+                        text = "Hôm nay cùng học bài mới nhé!",
+                        fontFamily = playfulFont,
+                        fontSize = 12.sp,
+                        color = subTextColor
+                    )
+                }
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .shadow(2.dp, RoundedCornerShape(16.dp))
+                        .background(Color(0xFFFFF9C4), RoundedCornerShape(16.dp))
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "⭐ $stars",
+                        fontFamily = playfulFont,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = Color(0xFFF57F17)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             Text(text = "LEVEL: ${playerLevel.uppercase()}", fontFamily = playfulFont, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp, color = orangeDark)
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Box(modifier = Modifier.weight(1f).height(14.dp).background(cardBg, RoundedCornerShape(50.dp))) {
                     if (progressFraction > 0f) {
@@ -100,20 +158,21 @@ fun HomeScreen(
             }
             Text(text = "$safeLessonsDone of $totalLessons lessons done", fontFamily = playfulFont, fontSize = 13.sp, color = subTextColor, modifier = Modifier.padding(top = 6.dp))
             if (!isPremium) {
-                Box(modifier = Modifier.fillMaxWidth().padding(top = 12.dp).background(Color(0xFFFFC107), RoundedCornerShape(20.dp)).clickable { onPremiumClick() }.padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.fillMaxWidth().padding(top = 10.dp).background(Color(0xFFFFC107), RoundedCornerShape(20.dp)).clickable { onPremiumClick() }.padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
                     Text(text = "👑 NÂNG CẤP LÊN PRO - MỞ KHÓA TẤT CẢ", fontFamily = playfulFont, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White)
                 }
             } else {
-                Box(modifier = Modifier.fillMaxWidth().padding(top = 12.dp).background(Color(0xFF4CAF50), RoundedCornerShape(20.dp)).padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.fillMaxWidth().padding(top = 10.dp).background(Color(0xFF4CAF50), RoundedCornerShape(20.dp)).padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
                     Text(text = "👑 BẠN ĐANG LÀ PRO - ĐÃ MỞ KHÓA TẤT CẢ", fontFamily = playfulFont, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White)
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
+
         Column(modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 24.dp)) {
             lessons.forEach { lesson ->
                 val isLocked = !isPremium && lesson.isPremium
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).shadow(2.dp, RoundedCornerShape(20.dp)).background(cardBg, RoundedCornerShape(20.dp)).clickable { if (isLocked) onPremiumClick() else onLessonClick(lesson) }.padding(horizontal = 16.dp, vertical = 16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp).shadow(2.dp, RoundedCornerShape(20.dp)).background(cardBg, RoundedCornerShape(20.dp)).clickable { if (isLocked) onPremiumClick() else onLessonClick(lesson) }.padding(horizontal = 16.dp, vertical = 14.dp)) {
                     Text(text = lesson.icon, fontSize = 32.sp)
                     Spacer(modifier = Modifier.width(14.dp))
                     Column(modifier = Modifier.weight(1f)) {
@@ -127,7 +186,7 @@ fun HomeScreen(
                 }
             }
             if (!isPremium) {
-                Box(modifier = Modifier.fillMaxWidth().padding(top = 12.dp).background(Color(0xFFE0E0E0), RoundedCornerShape(16.dp)).clickable { onPremiumClick() }.padding(vertical = 14.dp), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.fillMaxWidth().padding(top = 10.dp).background(Color(0xFFE0E0E0), RoundedCornerShape(16.dp)).clickable { onPremiumClick() }.padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
                     Text(text = "📢 Quảng cáo - Bấm để xóa với PRO 👑", fontFamily = playfulFont, fontSize = 13.sp, color = Color(0xFF757575))
                 }
             }

@@ -12,7 +12,10 @@ data class AppUser(
     val isPremium: Boolean = false,
     val streak: Int = 0,
     val lastActiveDate: String = "",
+    val stars: Int = 0,
     val xp: Int = 0,
     val lessonsDone: Int = 0,
+    val unlockedPets: List<String> = listOf("puppy"),
+    val lastFedTimestamp: Long = 0L,
     val createdAt: Long = System.currentTimeMillis()
 )

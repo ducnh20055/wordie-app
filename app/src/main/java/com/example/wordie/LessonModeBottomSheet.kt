@@ -40,7 +40,7 @@ fun LessonModeBottomSheet(
     val orangeDark = Color(0xFFE56E00)
     val orangeLightBg = Color(0xFFFFF1E0)
 
-    val sheetBg = if (isDarkMode) Color(0xFF222222) else Color.White
+    val sheetBg = if (isDarkMode) Color(0xFF222222) else Color(0xFFFFF8E1)
     val cardBg = if (isDarkMode) Color(0xFF2D2D2D) else orangeLightBg
     val textColor = if (isDarkMode) Color.White else Color(0xFF333333)
     val subTextColor = if (isDarkMode) Color(0xFFBDBDBD) else Color(0xFF757575)
@@ -50,7 +50,9 @@ fun LessonModeBottomSheet(
         Triple("quiz", "❓ Quiz trắc nghiệm", "Thử thách chọn nghĩa tiếng Việt chính xác"),
         Triple("listening", "🎧 Nghe chọn từ", "Luyện kỹ năng nghe phát âm chuẩn AI"),
         Triple("fill_in_blank", "✏️ Điền từ chính tả", "Luyện gõ từ tiếng Anh theo hình ảnh"),
-        Triple("word_matching", "🧩 Ghép từ / Ghép thẻ", "Trò chơi ghép thẻ tiếng Anh & tiếng Việt")
+        Triple("word_matching", "🧩 Ghép từ / Ghép thẻ", "Trò chơi ghép thẻ tiếng Anh & tiếng Việt"),
+        Triple("balloon_pop", "🎈 Bắt bóng từ vựng", "Trò chơi bắt bóng màu sắc vui nhộn"),
+        Triple("virtual_pet", "🦁 Vườn thú & Thú cưng", "Nuôi & chăm sóc thú cưng bằng Ngôi sao ⭐")
     )
 
     ModalBottomSheet(
@@ -93,13 +95,13 @@ fun LessonModeBottomSheet(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // DANH SÁCH 5 CHẾ ĐỘ HỌC
+            // DANH SÁCH CHẾ ĐỘ HỌC & GAME
             modes.forEach { (modeId, modeTitle, modeDesc) ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp)
+                        .padding(vertical = 5.dp)
                         .shadow(2.dp, RoundedCornerShape(20.dp))
                         .background(cardBg, RoundedCornerShape(20.dp))
                         .clickable {
@@ -112,7 +114,7 @@ fun LessonModeBottomSheet(
                             text = modeTitle,
                             fontFamily = playfulFont,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp,
+                            fontSize = 16.sp,
                             color = textColor
                         )
                         Spacer(modifier = Modifier.height(2.dp))

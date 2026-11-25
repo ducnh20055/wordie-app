@@ -1,5 +1,6 @@
 package com.example.wordie
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -46,6 +48,7 @@ fun ProfileScreen(
     onLogoutClick: () -> Unit,
     streak: Int = 0,
     lessonsDone: Int = 0,
+    stars: Int = 0,
     xp: Int = 0
 ) {
     val playfulFont = FontFamily(Font(R.font.fredoka_bold, FontWeight.Bold))
@@ -55,7 +58,7 @@ fun ProfileScreen(
     val orangeLightBg = Color(0xFFFFF1E0)
     val orangeShadow = Color(0xFFC85A00)
 
-    val bgColor = if (isDarkMode) Color(0xFF1A1A1A) else Color.White
+    val kidBg = if (isDarkMode) Color(0xFF1A1A1A) else Color(0xFFFFF8E1)
     val cardBg = if (isDarkMode) Color(0xFF2D2D2D) else orangeLightBg
     val textColor = if (isDarkMode) Color.White else Color(0xFF333333)
     val subTextColor = if (isDarkMode) Color(0xFFBDBDBD) else Color(0xFF757575)
@@ -63,10 +66,16 @@ fun ProfileScreen(
     var selectedTab by remember { mutableStateOf("profile") }
     var showMenu by remember { mutableStateOf(false) }
 
+    val streakBadge = when {
+        streak >= 7 -> "Siêu sao 🌟"
+        streak >= 3 -> "Ong chăm 🐝"
+        else -> "Tập sự 🐣"
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(bgColor)
+            .background(kidBg)
     ) {
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -145,9 +154,9 @@ fun ProfileScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // AVATAR + TÊN
+        // AVATAR LINH VẬT WORDIE + TÊN
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
@@ -159,13 +168,14 @@ fun ProfileScreen(
                     .shadow(6.dp, CircleShape)
                     .background(cardBg, CircleShape)
             ) {
-                Text(
-                    text = "🦊",
-                    fontSize = 58.sp
+                Image(
+                    painter = painterResource(id = R.drawable.wordie_happy),
+                    contentDescription = "Wordie Avatar",
+                    modifier = Modifier.size(80.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Text(
                 text = playerName.uppercase(),
@@ -179,7 +189,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "LEVEL: ${playerLevel.uppercase()} • BEGINNER",
+                text = "LEVEL: ${playerLevel.uppercase()} • $streakBadge",
                 fontFamily = playfulFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp,
@@ -190,7 +200,7 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 3 Ô THỐNG KÊ
+        // 3 Ô THỐNG KÊ (STREAK, NGÔI SAO ⭐, BÀI HỌC 📚)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -198,8 +208,8 @@ fun ProfileScreen(
         ) {
             ProfileStatBox(
                 emoji = "🔥",
-                value = "$streak",
-                label = "STREAK",
+                value = "$streak Ngày",
+                label = streakBadge,
                 playfulFont = playfulFont,
                 orangeMain = orangeMain,
                 cardBg = cardBg,
@@ -209,8 +219,8 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.width(10.dp))
             ProfileStatBox(
                 emoji = "⭐",
-                value = "$xp",
-                label = "XP",
+                value = "$stars",
+                label = "NGÔI SAO",
                 playfulFont = playfulFont,
                 orangeMain = orangeMain,
                 cardBg = cardBg,
@@ -220,8 +230,8 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.width(10.dp))
             ProfileStatBox(
                 emoji = "📚",
-                value = "$lessonsDone", // value = streak: Int
-                label = "LESSONS",
+                value = "$lessonsDone",
+                label = "BÀI HỌC",
                 playfulFont = playfulFont,
                 orangeMain = orangeMain,
                 cardBg = cardBg,
@@ -232,14 +242,14 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // THÀNH TÍCH
+        // THÀNH TÍCH HUY HIỆU
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
         ) {
             Text(
-                text = "ACHIEVEMENTS",
+                text = "HUY HIỆU ĐẠT ĐƯỢC 🏆",
                 fontFamily = playfulFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
@@ -254,8 +264,8 @@ fun ProfileScreen(
             ) {
                 AchievementItem(
                     emoji = "🏆",
-                    label = "First\nLesson",
-                    isUnlocked = true,
+                    label = "Bài Đầu\nTiên",
+                    isUnlocked = lessonsDone > 0,
                     playfulFont = playfulFont,
                     cardBg = cardBg,
                     textColor = textColor,
@@ -263,9 +273,9 @@ fun ProfileScreen(
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 AchievementItem(
-                    emoji = "🔥",
-                    label = "7 Days\nStreak",
-                    isUnlocked = true,
+                    emoji = "🐝",
+                    label = "Ong Chăm\nChỉ",
+                    isUnlocked = streak >= 3,
                     playfulFont = playfulFont,
                     cardBg = cardBg,
                     textColor = textColor,
@@ -274,8 +284,8 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.width(10.dp))
                 AchievementItem(
                     emoji = "🌟",
-                    label = "100\nXP",
-                    isUnlocked = true,
+                    label = "Siêu\nSao",
+                    isUnlocked = streak >= 7,
                     playfulFont = playfulFont,
                     cardBg = cardBg,
                     textColor = textColor,
@@ -283,9 +293,9 @@ fun ProfileScreen(
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 AchievementItem(
-                    emoji = "👑",
-                    label = "Master",
-                    isUnlocked = false,
+                    emoji = "🦁",
+                    label = "Vườn\nThú",
+                    isUnlocked = stars >= 10,
                     playfulFont = playfulFont,
                     cardBg = cardBg,
                     textColor = textColor,
@@ -296,7 +306,7 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // MENU
+        // MENU CÀI ĐẶT
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -305,23 +315,7 @@ fun ProfileScreen(
         ) {
             ProfileMenuItem(
                 icon = "✏️",
-                title = "Edit Profile",
-                playfulFont = playfulFont,
-                cardBg = cardBg,
-                textColor = textColor,
-                onClick = {}
-            )
-            ProfileMenuItem(
-                icon = "🔔",
-                title = "Notifications",
-                playfulFont = playfulFont,
-                cardBg = cardBg,
-                textColor = textColor,
-                onClick = {}
-            )
-            ProfileMenuItem(
-                icon = "⚙️",
-                title = "Settings",
+                title = "Đổi Tên & Tuổi",
                 playfulFont = playfulFont,
                 cardBg = cardBg,
                 textColor = textColor,
@@ -329,7 +323,7 @@ fun ProfileScreen(
             )
             ProfileMenuItem(
                 icon = "🚪",
-                title = "Log Out",
+                title = "Đăng Xuất",
                 playfulFont = playfulFont,
                 cardBg = cardBg,
                 textColor = textColor,
@@ -373,15 +367,15 @@ private fun ProfileStatBox(
             text = value,
             fontFamily = playfulFont,
             fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
+            fontSize = 18.sp,
             color = orangeMain
         )
         Text(
             text = label,
             fontFamily = playfulFont,
             fontWeight = FontWeight.Bold,
-            fontSize = 11.sp,
-            letterSpacing = 1.sp,
+            fontSize = 10.sp,
+            letterSpacing = 0.5.sp,
             color = subTextColor
         )
     }
@@ -471,7 +465,7 @@ private fun ProfileMenuItem(
 private fun ProfileScreenPreview() {
     WordieTheme {
         ProfileScreen(
-            playerName = "Duc Anh",
+            playerName = "TOMMY",
             playerLevel = "Beginner",
             isDarkMode = false,
             onBackClick = {},

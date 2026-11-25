@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
             var showLessonModeSheet by remember { mutableStateOf(false) }
             var currentScreen by remember { mutableStateOf("checking") }
             var playerLevel by remember { mutableStateOf("Beginner") }
-            var playerName by remember { mutableStateOf("Duc Anh") }
+            var playerName by remember { mutableStateOf("TOMMY") }
             var selectedLesson by remember { mutableStateOf<Lesson?>(null) }
             var currentUser by remember { mutableStateOf<AppUser?>(null) }
             var lessons by remember { mutableStateOf<List<Lesson>>(emptyList()) }
@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
                 val savedUser = authRepo.getCurrentUser()
                 if (savedUser != null) {
                     currentUser = savedUser
-                    playerName = savedUser.name
+                    playerName = savedUser.name.ifEmpty { "TOMMY" }
                     playerLevel = savedUser.level
                     isPremium = savedUser.isPremium
                     currentScreen = "home"
@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
                                 val result = authRepo.signUp(name, email, password)
                                 result.onSuccess { user ->
                                     currentUser = user
-                                    playerName = name.ifEmpty { "Duc Anh" }
+                                    playerName = name.ifEmpty { "TOMMY" }
                                     currentScreen = "input"
                                     Toast.makeText(this@MainActivity, "Đăng ký thành công!", Toast.LENGTH_SHORT).show()
                                 }.onFailure { e ->
@@ -151,11 +151,13 @@ class MainActivity : ComponentActivity() {
                     )
 
                     "home" -> HomeScreen(
+                        playerName = playerName,
                         playerLevel = playerLevel,
                         isDarkMode = isDarkMode,
                         isPremium = isPremium,
                         lessons = lessons,
                         lessonsDone = currentUser?.lessonsDone ?: 0,
+                        stars = currentUser?.stars ?: 0,
                         onLessonClick = { lesson ->
                             selectedLesson = lesson
                             showLessonModeSheet = true
@@ -187,7 +189,7 @@ class MainActivity : ComponentActivity() {
                                         val updated = authRepo.completeLesson(
                                             uid = currentUser?.uid ?: return@launch,
                                             currentUser = currentUser!!,
-                                            xpEarned = 20
+                                            starsEarned = 1
                                         )
                                         currentUser = updated
                                     }
@@ -214,7 +216,7 @@ class MainActivity : ComponentActivity() {
                                         val updated = authRepo.completeLesson(
                                             uid = currentUser?.uid ?: return@launch,
                                             currentUser = currentUser!!,
-                                            xpEarned = 20
+                                            starsEarned = 1
                                         )
                                         currentUser = updated
                                     }
@@ -240,7 +242,7 @@ class MainActivity : ComponentActivity() {
                                         val updated = authRepo.completeLesson(
                                             uid = currentUser?.uid ?: return@launch,
                                             currentUser = currentUser!!,
-                                            xpEarned = 20
+                                            starsEarned = 1
                                         )
                                         currentUser = updated
                                     }
@@ -266,7 +268,7 @@ class MainActivity : ComponentActivity() {
                                         val updated = authRepo.completeLesson(
                                             uid = currentUser?.uid ?: return@launch,
                                             currentUser = currentUser!!,
-                                            xpEarned = 20
+                                            starsEarned = 1
                                         )
                                         currentUser = updated
                                     }
@@ -289,7 +291,7 @@ class MainActivity : ComponentActivity() {
                                         val updated = authRepo.completeLesson(
                                             uid = currentUser?.uid ?: return@launch,
                                             currentUser = currentUser!!,
-                                            xpEarned = 20
+                                            starsEarned = 1
                                         )
                                         currentUser = updated
                                     }
@@ -297,6 +299,42 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+                    }
+
+                    // 6. BẮT BÓNG TỪ VỰNG
+                    "balloon_pop" -> {
+                        val lesson = selectedLesson
+                        if (lesson != null) {
+                            BalloonPopScreen(
+                                lesson = lesson,
+                                isDarkMode = isDarkMode,
+                                onBackClick = { currentScreen = "home" },
+                                onSpeakClick = { word ->
+                                    tts?.speak(word, TextToSpeech.QUEUE_FLUSH, null, null)
+                                },
+                                onFinishClick = {
+                                    scope.launch {
+                                        val updated = authRepo.completeLesson(
+                                            uid = currentUser?.uid ?: return@launch,
+                                            currentUser = currentUser!!,
+                                            starsEarned = 1
+                                        )
+                                        currentUser = updated
+                                    }
+                                    currentScreen = "home"
+                                }
+                            )
+                        }
+                    }
+
+                    // 7. VƯỜN THÚ CỦA CON / NUÔI THÚ ÁO
+                    "virtual_pet" -> {
+                        VirtualPetScreen(
+                            playerName = playerName,
+                            stars = currentUser?.stars ?: 0,
+                            isDarkMode = isDarkMode,
+                            onBackClick = { currentScreen = "home" }
+                        )
                     }
 
                     "profile" -> ProfileScreen(
@@ -312,6 +350,7 @@ class MainActivity : ComponentActivity() {
                         },
                         streak = currentUser?.streak ?: 0,
                         lessonsDone = currentUser?.lessonsDone ?: 0,
+                        stars = currentUser?.stars ?: 0,
                         xp = currentUser?.xp ?: 0
                     )
                 }

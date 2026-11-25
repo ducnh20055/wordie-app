@@ -54,6 +54,7 @@ class AuthRepository {
                 "age" to 0,
                 "level" to "Beginner",
                 "isPremium" to false,
+                "stars" to 0,
                 "xp" to 0,
                 "streak" to 0,
                 "lessonsDone" to 0,
@@ -70,6 +71,7 @@ class AuthRepository {
                 age = 0,
                 level = "Beginner",
                 isPremium = false,
+                stars = 0,
                 xp = 0,
                 streak = 0,
                 lessonsDone = 0,
@@ -107,6 +109,7 @@ class AuthRepository {
                         name = snap.getString("name") ?: (result.user?.displayName ?: cleanEmail.substringBefore("@")),
                         level = snap.getString("level") ?: "Beginner",
                         isPremium = snap.getBoolean("isPremium") ?: false,
+                        stars = (snap.getLong("stars") ?: 0L).toInt(),
                         xp = (snap.getLong("xp") ?: 0L).toInt(),
                         streak = (snap.getLong("streak") ?: 0L).toInt(),
                         lessonsDone = (snap.getLong("lessonsDone") ?: 0L).toInt(),
@@ -123,6 +126,7 @@ class AuthRepository {
                     "age" to 0,
                     "level" to "Beginner",
                     "isPremium" to false,
+                    "stars" to 0,
                     "xp" to 0,
                     "streak" to 0,
                     "lessonsDone" to 0,
@@ -155,6 +159,7 @@ class AuthRepository {
                     age = (snap.getLong("age") ?: 0L).toInt(),
                     level = snap.getString("level") ?: "Beginner",
                     isPremium = snap.getBoolean("isPremium") ?: false,
+                    stars = (snap.getLong("stars") ?: 0L).toInt(),
                     xp = (snap.getLong("xp") ?: 0L).toInt(),
                     streak = (snap.getLong("streak") ?: 0L).toInt(),
                     lessonsDone = (snap.getLong("lessonsDone") ?: 0L).toInt(),
@@ -173,6 +178,7 @@ class AuthRepository {
                     "age" to 0,
                     "level" to "Beginner",
                     "isPremium" to false,
+                    "stars" to 0,
                     "xp" to 0,
                     "streak" to 0,
                     "lessonsDone" to 0,
@@ -229,37 +235,23 @@ class AuthRepository {
         }
     }
 
-    suspend fun updateProgress(uid: String, lessonsDone: Int, xp: Int, streak: Int) {
-        try {
-            db.collection("users").document(uid).set(
-                mapOf(
-                    "lessonsDone" to lessonsDone,
-                    "xp" to xp,
-                    "streak" to streak
-                ),
-                SetOptions.merge()
-            ).await()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    // Hàm được gọi khi học xong 1 bài - Tự tính streak chuẩn theo ngày
-    suspend fun completeLesson(uid: String, currentUser: AppUser, xpEarned: Int = 20): AppUser {
+    suspend fun completeLesson(uid: String, currentUser: AppUser, starsEarned: Int = 1): AppUser {
         return try {
             val (today, yesterday) = getTodayAndYesterday()
             val effectiveStreak = getEffectiveStreak(currentUser.streak, currentUser.lastActiveDate)
 
             val newStreak = when (currentUser.lastActiveDate) {
-                today -> if (effectiveStreak > 0) effectiveStreak else 1 // Học thêm bài trong hôm nay -> giữ nguyên streak
-                yesterday -> effectiveStreak + 1 // Học tiếp vào ngày hôm sau -> +1 streak
-                else -> 1 // Chưa từng học hoặc bị đứt chuỗi -> bắt đầu chuỗi 1 ngày
+                today -> if (effectiveStreak > 0) effectiveStreak else 1
+                yesterday -> effectiveStreak + 1
+                else -> 1
             }
 
-            val newXp = currentUser.xp + xpEarned
+            val newStars = currentUser.stars + starsEarned
+            val newXp = currentUser.xp + (starsEarned * 10)
             val newLessonsDone = currentUser.lessonsDone + 1
 
             val updateData = mapOf(
+                "stars" to newStars,
                 "xp" to newXp,
                 "lessonsDone" to newLessonsDone,
                 "streak" to newStreak,
@@ -269,6 +261,7 @@ class AuthRepository {
             db.collection("users").document(uid).set(updateData, SetOptions.merge()).await()
 
             currentUser.copy(
+                stars = newStars,
                 xp = newXp,
                 lessonsDone = newLessonsDone,
                 streak = newStreak,
