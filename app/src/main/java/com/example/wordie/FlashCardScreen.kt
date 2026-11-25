@@ -1,5 +1,6 @@
 package com.example.wordie
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -60,6 +62,24 @@ fun FlashCardScreen(
     val textColor = if (isDarkMode) Color.White else Color(0xFF333333)
     val subTextColor = if (isDarkMode) Color(0xFFBDBDBD) else Color(0xFF757575)
 
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    // Xử lý phím Back hệ thống
+    BackHandler(enabled = true) {
+        showExitDialog = true
+    }
+
+    if (showExitDialog) {
+        ExitLessonDialog(
+            isDarkMode = isDarkMode,
+            onDismiss = { showExitDialog = false },
+            onConfirmExit = {
+                showExitDialog = false
+                onBackClick()
+            }
+        )
+    }
+
     // Nếu Firestore chưa có words thì dùng data mẫu
     val words = if (lesson.words.isNotEmpty()) lesson.words else listOf(
         WordItem(emoji = "🐶", english = "DOG", vietnamese = "Con chó", example = "The dog is happy."),
@@ -73,7 +93,7 @@ fun FlashCardScreen(
     Column(modifier = Modifier.fillMaxSize().background(bgColor).padding(horizontal = 24.dp)) {
         Spacer(modifier = Modifier.height(16.dp))
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(48.dp).shadow(3.dp, CircleShape).background(cardBg, CircleShape).clickable { onBackClick() }) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(48.dp).shadow(3.dp, CircleShape).background(cardBg, CircleShape).clickable { showExitDialog = true }) {
                 Text(text = "<", fontFamily = playfulFont, fontWeight = FontWeight.Bold, fontSize = 24.sp, color = orangeDark)
             }
             Spacer(modifier = Modifier.width(12.dp))
@@ -111,7 +131,7 @@ fun FlashCardScreen(
         }
         Spacer(modifier = Modifier.height(24.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
-            Button(onClick = { if (currentIndex > 0) currentIndex-- }, colors = ButtonDefaults.buttonColors(containerColor = cardBg, contentColor = orangeDark), shape = RoundedCornerShape(50.dp), modifier = Modifier.weight(1f).height(58.dp)) {
+            Button(onClick = { if (currentIndex > 0) currentIndex-- else showExitDialog = true }, colors = ButtonDefaults.buttonColors(containerColor = cardBg, contentColor = orangeDark), shape = RoundedCornerShape(50.dp), modifier = Modifier.weight(1f).height(58.dp)) {
                 Text(text = "< BACK", fontFamily = playfulFont, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
             Spacer(modifier = Modifier.width(12.dp))

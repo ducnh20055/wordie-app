@@ -1,5 +1,6 @@
 package com.example.wordie
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,7 +35,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,6 +60,24 @@ fun QuizScreen(
     val bgColor = if (isDarkMode) Color(0xFF1A1A1A) else Color.White
     val cardBg = if (isDarkMode) Color(0xFF2D2D2D) else orangeLightBg
     val textColor = if (isDarkMode) Color.White else Color(0xFF333333)
+
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    // Xử lý phím Back hệ thống
+    BackHandler(enabled = true) {
+        showExitDialog = true
+    }
+
+    if (showExitDialog) {
+        ExitLessonDialog(
+            isDarkMode = isDarkMode,
+            onDismiss = { showExitDialog = false },
+            onConfirmExit = {
+                showExitDialog = false
+                onBackClick()
+            }
+        )
+    }
 
     val words = if (lesson.words.isNotEmpty()) lesson.words else listOf(
         WordItem(emoji = "🐶", english = "DOG", vietnamese = "Con chó", example = "The dog is happy."),
@@ -101,7 +119,7 @@ fun QuizScreen(
                     .size(48.dp)
                     .shadow(3.dp, CircleShape)
                     .background(cardBg, CircleShape)
-                    .clickable { onBackClick() }
+                    .clickable { showExitDialog = true }
             ) {
                 Text(
                     text = "<",

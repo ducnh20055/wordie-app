@@ -1,5 +1,6 @@
 package com.example.wordie
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -68,6 +69,24 @@ fun WordMatchingScreen(
     val cardBg = if (isDarkMode) Color(0xFF2D2D2D) else orangeLightBg
     val textColor = if (isDarkMode) Color.White else Color(0xFF333333)
 
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    // Xử lý phím Back hệ thống
+    BackHandler(enabled = true) {
+        showExitDialog = true
+    }
+
+    if (showExitDialog) {
+        ExitLessonDialog(
+            isDarkMode = isDarkMode,
+            onDismiss = { showExitDialog = false },
+            onConfirmExit = {
+                showExitDialog = false
+                onBackClick()
+            }
+        )
+    }
+
     val words = if (lesson.words.isNotEmpty()) lesson.words else listOf(
         WordItem(id = "dog", emoji = "🐶", english = "DOG", vietnamese = "Con chó"),
         WordItem(id = "cat", emoji = "🐱", english = "CAT", vietnamese = "Con mèo"),
@@ -124,7 +143,7 @@ fun WordMatchingScreen(
                     .size(48.dp)
                     .shadow(3.dp, CircleShape)
                     .background(cardBg, CircleShape)
-                    .clickable { onBackClick() }
+                    .clickable { showExitDialog = true }
             ) {
                 Text(
                     text = "<",
