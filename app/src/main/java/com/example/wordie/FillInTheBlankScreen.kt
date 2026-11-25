@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -89,6 +90,7 @@ fun FillInTheBlankScreen(
     var inputText by remember { mutableStateOf("") }
     var isChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
+    var isFocused by remember { mutableStateOf(false) }
 
     val currentWord = words[currentIndex]
 
@@ -191,12 +193,15 @@ fun FillInTheBlankScreen(
             value = inputText,
             onValueChange = { if (!isChecked) inputText = it },
             placeholder = {
-                Text(
-                    text = "Gõ từ tiếng Anh ở đây...",
-                    fontFamily = playfulFont,
-                    fontSize = 16.sp,
-                    color = Color(0xFFBDBDBD)
-                )
+                // XÓA HINT NẾU NGƯỜI DÙNG BẤM VÀO Ô INPUT (FOCUSED)
+                if (!isFocused) {
+                    Text(
+                        text = "Gõ từ tiếng Anh ở đây...",
+                        fontFamily = playfulFont,
+                        fontSize = 16.sp,
+                        color = Color(0xFFBDBDBD)
+                    )
+                }
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
@@ -206,7 +211,7 @@ fun FillInTheBlankScreen(
                 fontSize = 22.sp,
                 letterSpacing = 2.sp,
                 color = textColor,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Start // CON TRỎ ĐẶT Ở ĐẦU Ô INPUT
             ),
             shape = RoundedCornerShape(24.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -218,6 +223,7 @@ fun FillInTheBlankScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp)
+                .onFocusChanged { isFocused = it.isFocused }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
