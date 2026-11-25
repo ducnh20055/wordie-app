@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
             var isDarkMode by remember { mutableStateOf(false) }
             var isPremium by remember { mutableStateOf(false) }
             var showPremiumSheet by remember { mutableStateOf(false) }
+            var showLessonModeSheet by remember { mutableStateOf(false) }
             var currentScreen by remember { mutableStateOf("checking") }
             var playerLevel by remember { mutableStateOf("Beginner") }
             var playerName by remember { mutableStateOf("Duc Anh") }
@@ -68,7 +69,7 @@ class MainActivity : ComponentActivity() {
                     "home" -> currentScreen = "home"
                     "play" -> {
                         selectedLesson = lessons.firstOrNull()
-                        currentScreen = "flashcard"
+                        showLessonModeSheet = true
                     }
                     "profile" -> currentScreen = "profile"
                 }
@@ -157,7 +158,7 @@ class MainActivity : ComponentActivity() {
                         lessonsDone = currentUser?.lessonsDone ?: 0,
                         onLessonClick = { lesson ->
                             selectedLesson = lesson
-                            currentScreen = "flashcard"
+                            showLessonModeSheet = true
                         },
                         onPremiumClick = { showPremiumSheet = true },
                         onTabClick = onTabClick,
@@ -168,6 +169,7 @@ class MainActivity : ComponentActivity() {
                         }
                     )
 
+                    // 1. THẺ TỪ (FLASHCARD)
                     "flashcard" -> {
                         val lesson = selectedLesson
                         if (lesson != null) {
@@ -185,9 +187,112 @@ class MainActivity : ComponentActivity() {
                                         val updated = authRepo.completeLesson(
                                             uid = currentUser?.uid ?: return@launch,
                                             currentUser = currentUser!!,
-                                            xpEarned = 20)
+                                            xpEarned = 20
+                                        )
                                         currentUser = updated
-                                        }
+                                    }
+                                    currentScreen = "home"
+                                }
+                            )
+                        }
+                    }
+
+                    // 2. QUIZ TRẮC NGHIỆM
+                    "quiz" -> {
+                        val lesson = selectedLesson
+                        if (lesson != null) {
+                            QuizScreen(
+                                lesson = lesson,
+                                isDarkMode = isDarkMode,
+                                isPremium = isPremium,
+                                onBackClick = { currentScreen = "home" },
+                                onSpeakClick = { word ->
+                                    tts?.speak(word, TextToSpeech.QUEUE_FLUSH, null, null)
+                                },
+                                onFinishClick = {
+                                    scope.launch {
+                                        val updated = authRepo.completeLesson(
+                                            uid = currentUser?.uid ?: return@launch,
+                                            currentUser = currentUser!!,
+                                            xpEarned = 20
+                                        )
+                                        currentUser = updated
+                                    }
+                                    currentScreen = "home"
+                                }
+                            )
+                        }
+                    }
+
+                    // 3. NGHE CHỌN TỪ
+                    "listening" -> {
+                        val lesson = selectedLesson
+                        if (lesson != null) {
+                            ListeningQuizScreen(
+                                lesson = lesson,
+                                isDarkMode = isDarkMode,
+                                onBackClick = { currentScreen = "home" },
+                                onSpeakClick = { word ->
+                                    tts?.speak(word, TextToSpeech.QUEUE_FLUSH, null, null)
+                                },
+                                onFinishClick = {
+                                    scope.launch {
+                                        val updated = authRepo.completeLesson(
+                                            uid = currentUser?.uid ?: return@launch,
+                                            currentUser = currentUser!!,
+                                            xpEarned = 20
+                                        )
+                                        currentUser = updated
+                                    }
+                                    currentScreen = "home"
+                                }
+                            )
+                        }
+                    }
+
+                    // 4. ĐIỀN TỪ CHÍNH TẢ
+                    "fill_in_blank" -> {
+                        val lesson = selectedLesson
+                        if (lesson != null) {
+                            FillInTheBlankScreen(
+                                lesson = lesson,
+                                isDarkMode = isDarkMode,
+                                onBackClick = { currentScreen = "home" },
+                                onSpeakClick = { word ->
+                                    tts?.speak(word, TextToSpeech.QUEUE_FLUSH, null, null)
+                                },
+                                onFinishClick = {
+                                    scope.launch {
+                                        val updated = authRepo.completeLesson(
+                                            uid = currentUser?.uid ?: return@launch,
+                                            currentUser = currentUser!!,
+                                            xpEarned = 20
+                                        )
+                                        currentUser = updated
+                                    }
+                                    currentScreen = "home"
+                                }
+                            )
+                        }
+                    }
+
+                    // 5. GHÉP TỪ / GHÉP THẺ
+                    "word_matching" -> {
+                        val lesson = selectedLesson
+                        if (lesson != null) {
+                            WordMatchingScreen(
+                                lesson = lesson,
+                                isDarkMode = isDarkMode,
+                                onBackClick = { currentScreen = "home" },
+                                onFinishClick = {
+                                    scope.launch {
+                                        val updated = authRepo.completeLesson(
+                                            uid = currentUser?.uid ?: return@launch,
+                                            currentUser = currentUser!!,
+                                            xpEarned = 20
+                                        )
+                                        currentUser = updated
+                                    }
                                     currentScreen = "home"
                                 }
                             )
@@ -208,6 +313,18 @@ class MainActivity : ComponentActivity() {
                         streak = currentUser?.streak ?: 0,
                         lessonsDone = currentUser?.lessonsDone ?: 0,
                         xp = currentUser?.xp ?: 0
+                    )
+                }
+
+                if (showLessonModeSheet && selectedLesson != null) {
+                    LessonModeBottomSheet(
+                        lesson = selectedLesson!!,
+                        isDarkMode = isDarkMode,
+                        onDismiss = { showLessonModeSheet = false },
+                        onModeSelect = { mode ->
+                            showLessonModeSheet = false
+                            currentScreen = mode
+                        }
                     )
                 }
 
