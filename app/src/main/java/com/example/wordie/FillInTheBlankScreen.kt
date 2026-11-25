@@ -191,10 +191,14 @@ fun FillInTheBlankScreen(
         // Ô NHẬP TỪ TIẾNG ANH
         OutlinedTextField(
             value = inputText,
-            onValueChange = { if (!isChecked) inputText = it },
+            onValueChange = { newValue ->
+                inputText = newValue
+                if (isChecked && !isCorrect) {
+                    isChecked = false // Cho phép gõ/xóa lại thoải mái khi vừa gõ sai
+                }
+            },
             placeholder = {
-                // XÓA HINT NẾU NGƯỜI DÙNG BẤM VÀO Ô INPUT (FOCUSED)
-                if (!isFocused) {
+                if (!isFocused && inputText.isEmpty()) {
                     Text(
                         text = "Gõ từ tiếng Anh ở đây...",
                         fontFamily = playfulFont,
@@ -211,7 +215,7 @@ fun FillInTheBlankScreen(
                 fontSize = 22.sp,
                 letterSpacing = 2.sp,
                 color = textColor,
-                textAlign = TextAlign.Start // CON TRỎ ĐẶT Ở ĐẦU Ô INPUT
+                textAlign = TextAlign.Start
             ),
             shape = RoundedCornerShape(24.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -230,7 +234,7 @@ fun FillInTheBlankScreen(
 
         if (isChecked) {
             Text(
-                text = if (isCorrect) "✓ CHÍNH XÁC!" else "✗ CHƯA ĐÚNG! ĐÁP ÁN ĐÚNG: ${currentWord.english}",
+                text = if (isCorrect) "✓ CHÍNH XÁC!" else "✗ CHƯA ĐÚNG! HÃY THỬ LẠI.",
                 fontFamily = playfulFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
@@ -242,25 +246,32 @@ fun FillInTheBlankScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // NÚT CHECK HOẶC NEXT
+        // NÚT CHECK / THỬ LẠI / CÂU TIẾP TỤC
         Button(
             onClick = {
                 if (!isChecked) {
                     if (inputText.trim().equals(currentWord.english.trim(), ignoreCase = true)) {
                         isCorrect = true
+                        isChecked = true
                         onSpeakClick(currentWord.english)
                     } else {
                         isCorrect = false
+                        isChecked = true
                     }
-                    isChecked = true
                 } else {
-                    if (currentIndex < words.size - 1) {
-                        currentIndex++
+                    if (isCorrect) {
+                        if (currentIndex < words.size - 1) {
+                            currentIndex++
+                            inputText = ""
+                            isChecked = false
+                            isCorrect = false
+                        } else {
+                            onFinishClick()
+                        }
+                    } else {
+                        // Nhấn nút THỬ LẠI -> Xóa text cũ để người dùng nhập mới
                         inputText = ""
                         isChecked = false
-                        isCorrect = false
-                    } else {
-                        onFinishClick()
                     }
                 }
             },
@@ -277,6 +288,7 @@ fun FillInTheBlankScreen(
             Text(
                 text = when {
                     !isChecked -> "KIỂM TRA 🔍"
+                    !isCorrect -> "THỬ LẠI 🔄"
                     currentIndex == words.size - 1 -> "HOÀN THÀNH 🎉"
                     else -> "CÂU TIẾP TỤC ->"
                 },
