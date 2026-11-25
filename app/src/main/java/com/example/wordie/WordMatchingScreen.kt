@@ -15,9 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -97,13 +94,18 @@ fun WordMatchingScreen(
     // Chọn ngẫu nhiên 4 cặp từ
     val sampleWords = remember { words.shuffled().take(4) }
 
-    val cards = remember {
-        val list = mutableListOf<MatchingCard>()
-        sampleWords.forEach { word ->
-            list.add(MatchingCard(id = "en_${word.id}", text = "${word.emoji} ${word.english}", wordId = word.id, isEnglish = true))
-            list.add(MatchingCard(id = "vi_${word.id}", text = word.vietnamese, wordId = word.id, isEnglish = false))
-        }
-        list.shuffled()
+    // CỘT BÊN TRÁI: Chỉ chứa thẻ Tiếng Anh
+    val englishCards = remember {
+        sampleWords.map { word ->
+            MatchingCard(id = "en_${word.id}", text = "${word.emoji} ${word.english}", wordId = word.id, isEnglish = true)
+        }.shuffled()
+    }
+
+    // CỘT BÊN PHẢI: Chỉ chứa thẻ Tiếng Việt
+    val vietnameseCards = remember {
+        sampleWords.map { word ->
+            MatchingCard(id = "vi_${word.id}", text = word.vietnamese, wordId = word.id, isEnglish = false)
+        }.shuffled()
     }
 
     var selectedCard1 by remember { mutableStateOf<MatchingCard?>(null) }
@@ -116,9 +118,13 @@ fun WordMatchingScreen(
         val c2 = selectedCard2
         if (c1 != null && c2 != null) {
             if (c1.wordId == c2.wordId) {
+                // ĐÚNG -> Hiện màu xanh 400ms rồi biến mất
+                delay(400)
                 matchedWordIds.add(c1.wordId)
+            } else {
+                // SAI -> Hiện màu đỏ nhạt 600ms rồi nhả thẻ ra (giống ảnh)
+                delay(600)
             }
-            delay(500)
             selectedCard1 = null
             selectedCard2 = null
         }
@@ -185,7 +191,7 @@ fun WordMatchingScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Hãy chọn 1 thẻ tiếng Anh và 1 thẻ nghĩa tiếng Việt tương ứng:",
+            text = "Nối thẻ tiếng Anh (Trái) với thẻ tiếng Việt (Phải):",
             fontFamily = playfulFont,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
@@ -196,59 +202,70 @@ fun WordMatchingScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // LƯỚI THẺ 2 CỘT
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        // LƯỚI THẺ: CỘT TRÁI (TIẾNG ANH) - CỘT PHẢI (TIẾNG VIỆT)
+        Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            items(cards) { card ->
-                val isMatched = matchedWordIds.contains(card.wordId)
-                val isSelected = selectedCard1 == card || selectedCard2 == card
+            for (i in 0 until sampleWords.size) {
+                val enCard = englishCards.getOrNull(i)
+                val viCard = vietnameseCards.getOrNull(i)
 
-                val cardBackgroundColor = when {
-                    isMatched -> Color(0xFF4CAF50)
-                    isSelected -> orangeMain
-                    else -> cardBg
-                }
-
-                val cardTextColor = when {
-                    isMatched || isSelected -> Color.White
-                    else -> textColor
-                }
-
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp)
-                        .shadow(if (isMatched || isSelected) 6.dp else 2.dp, RoundedCornerShape(20.dp))
-                        .background(cardBackgroundColor, RoundedCornerShape(20.dp))
-                        .border(
-                            2.dp,
-                            if (isSelected) orangeDark else Color.Transparent,
-                            RoundedCornerShape(20.dp)
-                        )
-                        .clickable(enabled = !isMatched && (selectedCard1 == null || selectedCard2 == null)) {
-                            if (selectedCard1 == null) {
-                                selectedCard1 = card
-                            } else if (selectedCard2 == null && card != selectedCard1) {
-                                selectedCard2 = card
-                            }
-                        }
-                        .padding(12.dp)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = if (isMatched) "${card.text} ✓" else card.text,
-                        fontFamily = playfulFont,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = cardTextColor,
-                        textAlign = TextAlign.Center
-                    )
+                    // CỘT BÊN TRÁI: TIẾNG ANH
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (enCard != null) {
+                            MatchingCardItem(
+                                card = enCard,
+                                isMatched = matchedWordIds.contains(enCard.wordId),
+                                selectedCard1 = selectedCard1,
+                                selectedCard2 = selectedCard2,
+                                isDarkMode = isDarkMode,
+                                cardBg = cardBg,
+                                textColor = textColor,
+                                orangeMain = orangeMain,
+                                orangeLightBg = orangeLightBg,
+                                playfulFont = playfulFont,
+                                onCardClick = { card ->
+                                    if (selectedCard1 == null) {
+                                        selectedCard1 = card
+                                    } else if (selectedCard2 == null && card != selectedCard1) {
+                                        selectedCard2 = card
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                    // CỘT BÊN PHẢI: TIẾNG VIỆT
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (viCard != null) {
+                            MatchingCardItem(
+                                card = viCard,
+                                isMatched = matchedWordIds.contains(viCard.wordId),
+                                selectedCard1 = selectedCard1,
+                                selectedCard2 = selectedCard2,
+                                isDarkMode = isDarkMode,
+                                cardBg = cardBg,
+                                textColor = textColor,
+                                orangeMain = orangeMain,
+                                orangeLightBg = orangeLightBg,
+                                playfulFont = playfulFont,
+                                onCardClick = { card ->
+                                    if (selectedCard1 == null) {
+                                        selectedCard1 = card
+                                    } else if (selectedCard2 == null && card != selectedCard1) {
+                                        selectedCard2 = card
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -290,6 +307,80 @@ fun WordMatchingScreen(
         }
 
         Spacer(modifier = Modifier.height(20.dp))
+    }
+}
+
+@Composable
+private fun MatchingCardItem(
+    card: MatchingCard,
+    isMatched: Boolean,
+    selectedCard1: MatchingCard?,
+    selectedCard2: MatchingCard?,
+    isDarkMode: Boolean,
+    cardBg: Color,
+    textColor: Color,
+    orangeMain: Color,
+    orangeLightBg: Color,
+    playfulFont: FontFamily,
+    onCardClick: (MatchingCard) -> Unit
+) {
+    if (isMatched) {
+        // Đã ghép đúng ➔ Ô BIẾN MẤT (Chuyển thành khoảng trống)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(90.dp)
+        )
+    } else {
+        val isSelected = selectedCard1 == card || selectedCard2 == card
+        val hasTwoSelected = selectedCard1 != null && selectedCard2 != null
+        val isCorrectPair = hasTwoSelected && selectedCard1.wordId == selectedCard2.wordId
+        val isIncorrectPair = hasTwoSelected && selectedCard1.wordId != selectedCard2.wordId
+
+        // MÀU NỀN & VIỀN & CHỮ THEO TRẠNG THÁI
+        val cardBackgroundColor = when {
+            isSelected && isCorrectPair -> Color(0xFFE8F5E9) // Xanh lá nhạt khi ghép đúng
+            isSelected && isIncorrectPair -> Color(0xFFFFEBEE) // Đỏ nhạt khi ghép sai (như ảnh)
+            isSelected -> if (isDarkMode) Color(0xFF3D2A1A) else orangeLightBg
+            else -> cardBg
+        }
+
+        val cardBorderColor = when {
+            isSelected && isCorrectPair -> Color(0xFF81C784)
+            isSelected && isIncorrectPair -> Color(0xFFEF9A9A) // Viền đỏ nhạt (như ảnh)
+            isSelected -> orangeMain
+            else -> Color.Transparent
+        }
+
+        val cardTextColor = when {
+            isSelected && isCorrectPair -> Color(0xFF2E7D32)
+            isSelected && isIncorrectPair -> Color(0xFFC62828) // Chữ đỏ (như ảnh)
+            isSelected -> orangeMain
+            else -> textColor
+        }
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(90.dp)
+                .shadow(if (isSelected) 6.dp else 2.dp, RoundedCornerShape(20.dp))
+                .background(cardBackgroundColor, RoundedCornerShape(20.dp))
+                .border(2.dp, cardBorderColor, RoundedCornerShape(20.dp))
+                .clickable(enabled = !hasTwoSelected) {
+                    onCardClick(card)
+                }
+                .padding(10.dp)
+        ) {
+            Text(
+                text = card.text, // KO CÓ NÚT TICK ✓
+                fontFamily = playfulFont,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                color = cardTextColor,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
