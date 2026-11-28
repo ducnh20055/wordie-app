@@ -269,7 +269,7 @@ fun GrammarScreen(
                             .padding(horizontal = 16.dp, vertical = 6.dp)
                     ) {
                         Text(
-                            text = if (currentChapter.starsEarned > 0) "Đã học" else "Bài học mới",
+                            text = if (currentChapter.progressPercent > 0 || currentChapter.starsEarned > 0) "Đang học" else "Bài học mới",
                             fontFamily = playfulFont,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
@@ -315,7 +315,13 @@ fun GrammarScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // BUTTON TIẾP TỤC / HỌC NGAY
+                    // BUTTON BẮT ĐẦU HỌC / TIẾP TỤC HỌC / HỌC LẠI
+                    val buttonText = when {
+                        currentChapter.starsEarned > 0 && currentChapter.starsEarned < currentChapter.totalStars -> "Tiếp tục học"
+                        currentChapter.starsEarned >= currentChapter.totalStars -> "Học lại"
+                        else -> "Bắt đầu học"
+                    }
+
                     Button(
                         onClick = { onStartLesson(currentChapter) },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White),
@@ -325,7 +331,7 @@ fun GrammarScreen(
                             .height(46.dp)
                     ) {
                         Text(
-                            text = if (currentChapter.starsEarned > 0) "Học tiếp" else "Tiếp tục",
+                            text = buttonText,
                             fontFamily = playfulFont,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,

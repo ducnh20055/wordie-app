@@ -51,6 +51,7 @@ fun HomeScreen(
     lessonsDone: Int = 0,
     stars: Int = 0,
     nativeLanguage: String = "Vietnamese",
+    selectedTab: String = "vocabulary",
     onLessonClick: (lesson: Lesson) -> Unit,
     onPremiumClick: () -> Unit,
     onTabClick: (tab: String) -> Unit,
@@ -63,11 +64,10 @@ fun HomeScreen(
     val orangeDark = Color(0xFFE56E00)
     val orangeLightBg = Color(0xFFFFF1E0)
     val orangeShadow = Color(0xFFC85A00)
-    val bgColor = if (isDarkMode) Color(0xFF1A1A1A) else Color.White
-    val cardBg = if (isDarkMode) Color(0xFF2D2D2D) else orangeLightBg
+    val bgColor = if (isDarkMode) Color(0xFF16171B) else Color.White
+    val cardBg = if (isDarkMode) Color(0xFF22242B) else orangeLightBg
     val textColor = if (isDarkMode) Color.White else Color(0xFF333333)
     val subTextColor = if (isDarkMode) Color(0xFFBDBDBD) else Color(0xFF757575)
-    var selectedTab by remember { mutableStateOf("home") }
     var showMenu by remember { mutableStateOf(false) }
 
     val totalLessons = lessons.size
@@ -140,7 +140,7 @@ fun HomeScreen(
                 }
             }
         }
-        BottomNavBar(selectedTab = selectedTab, isDarkMode = isDarkMode, onTabClick = { tab -> selectedTab = tab; onTabClick(tab) })
+        BottomNavBar(selectedTab = selectedTab, isDarkMode = isDarkMode, onTabClick = onTabClick)
     }
 }
 

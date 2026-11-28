@@ -51,7 +51,8 @@ fun ProfileScreen(
     streak: Int = 0,
     lessonsDone: Int = 0,
     stars: Int = 0,
-    xp: Int = 0
+    xp: Int = 0,
+    selectedTab: String = "profile"
 ) {
     val playfulFont = FontFamily(Font(R.font.fredoka_bold, FontWeight.Bold))
 
@@ -60,12 +61,11 @@ fun ProfileScreen(
     val orangeLightBg = Color(0xFFFFF1E0)
     val orangeShadow = Color(0xFFC85A00)
 
-    val bgColor = if (isDarkMode) Color(0xFF1A1A1A) else Color.White
-    val cardBg = if (isDarkMode) Color(0xFF2D2D2D) else orangeLightBg
+    val bgColor = if (isDarkMode) Color(0xFF16171B) else Color.White
+    val cardBg = if (isDarkMode) Color(0xFF22242B) else orangeLightBg
     val textColor = if (isDarkMode) Color.White else Color(0xFF333333)
     val subTextColor = if (isDarkMode) Color(0xFFBDBDBD) else Color(0xFF757575)
 
-    var selectedTab by remember { mutableStateOf("profile") }
     var showMenu by remember { mutableStateOf(false) }
 
     Column(
@@ -360,10 +360,7 @@ fun ProfileScreen(
         BottomNavBar(
             selectedTab = selectedTab,
             isDarkMode = isDarkMode,
-            onTabClick = { tab ->
-                selectedTab = tab
-                onTabClick(tab)
-            }
+            onTabClick = onTabClick
         )
     }
 }
