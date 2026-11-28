@@ -263,7 +263,6 @@ class MainActivity : ComponentActivity() {
                             "grammar" -> GrammarScreen(
                                 streakDays = currentUser?.streak ?: 0,
                                 currentLevel = 1,
-                                progressPercent = grammarUiState.currentChapter.progressPercent,
                                 chapters = grammarUiState.chapters,
                                 selectedChapterIndex = grammarUiState.currentChapterIndex,
                                 isDarkMode = isDarkMode,

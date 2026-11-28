@@ -32,13 +32,15 @@ fun BottomNavBar(
 ) {
     val playfulFont = FontFamily(Font(R.font.fredoka_bold, FontWeight.Bold))
     val orangeMain = Color(0xFFFF8A00)
-    val cardBg = if (isDarkMode) Color(0xFF2D2D2D) else Color(0xFF1E1E1E)
-    val activeBg = if (isDarkMode) Color(0xFF3D3D3D) else Color(0xFF2A2A2A)
+    
+    // Light theme style matching Image 1 across all screens
+    val cardBg = if (isDarkMode) Color(0xFF2D2D2D) else Color(0xFFFFF1E0)
+    val activeBg = if (isDarkMode) Color(0xFF3D3D3D) else Color.White
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -47,32 +49,33 @@ fun BottomNavBar(
                 .fillMaxWidth()
                 .shadow(8.dp, RoundedCornerShape(50.dp))
                 .background(cardBg, RoundedCornerShape(50.dp))
-                .padding(vertical = 8.dp, horizontal = 8.dp)
+                .padding(vertical = 8.dp, horizontal = 10.dp)
         ) {
             // 1. GRAMMAR (HOME)
             val isGrammar = selectedTab == "grammar" || selectedTab == "home"
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .height(48.dp)
+                    .height(52.dp)
                     .then(
                         if (isGrammar) Modifier
-                            .shadow(2.dp, RoundedCornerShape(50.dp))
+                            .shadow(4.dp, RoundedCornerShape(50.dp))
                             .background(activeBg, RoundedCornerShape(50.dp))
-                            .padding(horizontal = 14.dp)
+                            .padding(horizontal = 16.dp)
                         else Modifier.padding(horizontal = 8.dp)
                     )
                     .clickable { onTabClick("grammar") }
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "🏠", fontSize = 20.sp)
+                    Text(text = "🏠", fontSize = 22.sp)
                     if (isGrammar) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "GRAMMAR",
                             fontFamily = playfulFont,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
+                            letterSpacing = 0.5.sp,
                             color = orangeMain
                         )
                     }
@@ -84,25 +87,26 @@ fun BottomNavBar(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .height(48.dp)
+                    .height(52.dp)
                     .then(
                         if (isVocab) Modifier
-                            .shadow(2.dp, RoundedCornerShape(50.dp))
+                            .shadow(4.dp, RoundedCornerShape(50.dp))
                             .background(activeBg, RoundedCornerShape(50.dp))
-                            .padding(horizontal = 14.dp)
+                            .padding(horizontal = 16.dp)
                         else Modifier.padding(horizontal = 8.dp)
                     )
                     .clickable { onTabClick("vocabulary") }
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "📚", fontSize = 20.sp)
+                    Text(text = "📚", fontSize = 22.sp)
                     if (isVocab) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "VOCAB",
                             fontFamily = playfulFont,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
+                            letterSpacing = 0.5.sp,
                             color = orangeMain
                         )
                     }
@@ -114,25 +118,26 @@ fun BottomNavBar(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .height(48.dp)
+                    .height(52.dp)
                     .then(
                         if (isStats) Modifier
-                            .shadow(2.dp, RoundedCornerShape(50.dp))
+                            .shadow(4.dp, RoundedCornerShape(50.dp))
                             .background(activeBg, RoundedCornerShape(50.dp))
-                            .padding(horizontal = 14.dp)
+                            .padding(horizontal = 16.dp)
                         else Modifier.padding(horizontal = 8.dp)
                     )
                     .clickable { onTabClick("statistics") }
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "📊", fontSize = 20.sp)
+                    Text(text = "📊", fontSize = 22.sp)
                     if (isStats) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "STATS",
                             fontFamily = playfulFont,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
+                            letterSpacing = 0.5.sp,
                             color = orangeMain
                         )
                     }
@@ -144,25 +149,26 @@ fun BottomNavBar(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .height(48.dp)
+                    .height(52.dp)
                     .then(
                         if (isProfile) Modifier
-                            .shadow(2.dp, RoundedCornerShape(50.dp))
+                            .shadow(4.dp, RoundedCornerShape(50.dp))
                             .background(activeBg, RoundedCornerShape(50.dp))
-                            .padding(horizontal = 14.dp)
+                            .padding(horizontal = 16.dp)
                         else Modifier.padding(horizontal = 8.dp)
                     )
                     .clickable { onTabClick("profile") }
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "👤", fontSize = 20.sp)
+                    Text(text = "👤", fontSize = 22.sp)
                     if (isProfile) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "PROFILE",
                             fontFamily = playfulFont,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
+                            letterSpacing = 0.5.sp,
                             color = orangeMain
                         )
                     }
