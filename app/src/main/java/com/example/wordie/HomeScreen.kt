@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wordie.models.Lesson
+import com.example.wordie.ui.components.BottomNavBar
 import com.example.wordie.ui.components.LessonCard
 import com.example.wordie.ui.theme.WordieTheme
 import com.example.wordie.utils.LocalizedStrings
