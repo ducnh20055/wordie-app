@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.example.wordie.models.Lesson
 import com.example.wordie.ui.components.BottomNavBar
 import com.example.wordie.ui.components.LessonCard
+import com.example.wordie.ui.components.MenuDropdown
 import com.example.wordie.ui.theme.WordieTheme
 import com.example.wordie.utils.LocalizedStrings
 

@@ -1,4 +1,4 @@
-package com.example.wordie
+package com.example.wordie.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wordie.R
 import com.example.wordie.ui.theme.WordieTheme
 
 @Composable

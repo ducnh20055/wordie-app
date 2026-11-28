@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.example.wordie.R
 import com.example.wordie.models.GrammarChapter
 import com.example.wordie.ui.components.BottomNavBar
+import com.example.wordie.ui.components.MenuDropdown
 
 @Composable
 fun GrammarScreen(
@@ -39,19 +40,23 @@ fun GrammarScreen(
     selectedTab: String = "grammar",
     onChapterSelect: (Int) -> Unit = {},
     onTabClick: (String) -> Unit = {},
-    onStartLesson: (GrammarChapter) -> Unit = {}
+    onStartLesson: (GrammarChapter) -> Unit = {},
+    onThemeToggle: (Boolean) -> Unit = {},
+    onLanguageClick: () -> Unit = {},
+    onLogoutClick: () -> Unit = {}
 ) {
     val playfulFont = FontFamily(Font(R.font.fredoka_bold, FontWeight.Bold))
 
     val orangeMain = Color(0xFFFF8A00)
     val orangeDark = Color(0xFFE56E00)
     val orangeLightBg = Color(0xFFFFF1E0)
-    val orangeShadow = Color(0xFFC85A00)
 
     val bgColor = if (isDarkMode) Color(0xFF1A1A1A) else Color.White
     val cardBg = if (isDarkMode) Color(0xFF2D2D2D) else orangeLightBg
     val textColor = if (isDarkMode) Color.White else Color(0xFF333333)
     val subTextColor = if (isDarkMode) Color(0xFFBDBDBD) else Color(0xFF757575)
+
+    var showMenu by remember { mutableStateOf(false) }
 
     val safeChapters = if (chapters.isNotEmpty()) chapters else com.example.wordie.models.getSampleGrammarChapters()
     val activeIndex = selectedChapterIndex.coerceIn(0, safeChapters.size - 1)
@@ -64,7 +69,7 @@ fun GrammarScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        // TOP HEADER BAR (MATCHING IMAGE 1 & 2 STYLE)
+        // TOP HEADER BAR - REPLACED -80% WITH MENUDROPDOWN
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -119,27 +124,40 @@ fun GrammarScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             // PLANET ICON
             Text(text = "🪐", fontSize = 28.sp)
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
-            // PROMO BADGE -80%
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .shadow(4.dp, RoundedCornerShape(20.dp))
-                    .background(Color(0xFFFF5252), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
-            ) {
-                Text(
-                    text = "-80%",
-                    fontFamily = playfulFont,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp,
-                    color = Color.White
+            // 3-LINE MENU DROPDOWN (REPLACED -80%)
+            Box {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .shadow(2.dp, CircleShape)
+                        .background(cardBg, CircleShape)
+                        .clickable { showMenu = true }
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(modifier = Modifier.width(18.dp).height(2.5.dp).background(orangeDark, RoundedCornerShape(50.dp)))
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Box(modifier = Modifier.width(18.dp).height(2.5.dp).background(orangeDark, RoundedCornerShape(50.dp)))
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Box(modifier = Modifier.width(18.dp).height(2.5.dp).background(orangeDark, RoundedCornerShape(50.dp)))
+                    }
+                }
+
+                MenuDropdown(
+                    expanded = showMenu,
+                    isDarkMode = isDarkMode,
+                    onDismiss = { showMenu = false },
+                    onThemeToggle = { onThemeToggle(it) },
+                    onLanguageClick = { showMenu = false; onLanguageClick() },
+                    onHelpClick = { showMenu = false },
+                    onLogoutClick = { showMenu = false; onLogoutClick() }
                 )
             }
         }
@@ -154,7 +172,7 @@ fun GrammarScreen(
         ) {
             Spacer(modifier = Modifier.height(12.dp))
 
-            // CIRCULAR STREAK GAUGE (LIGHT THEME)
+            // CIRCULAR STREAK GAUGE
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(160.dp)
@@ -251,7 +269,7 @@ fun GrammarScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // CIRCULAR LESSON CARD (LIGHT THEME MATCHING IMAGE 1)
+            // CIRCULAR LESSON CARD
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -350,7 +368,7 @@ fun GrammarScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // NAV BAR DƯỚI (LIGHT THEME MATCHING IMAGE 1)
+        // NAV BAR DƯỚI
         BottomNavBar(
             selectedTab = selectedTab,
             isDarkMode = isDarkMode,

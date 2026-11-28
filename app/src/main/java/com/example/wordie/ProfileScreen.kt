@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wordie.ui.components.BottomNavBar
+import com.example.wordie.ui.components.MenuDropdown
 import com.example.wordie.ui.theme.WordieTheme
 
 @Composable
