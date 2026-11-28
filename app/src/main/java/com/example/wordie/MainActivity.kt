@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,12 +21,11 @@ import com.example.wordie.data.AuthRepository
 import com.example.wordie.data.LessonRepository
 import com.example.wordie.data.getSampleLessons
 import com.example.wordie.models.AppUser
-import com.example.wordie.models.GrammarChapter
 import com.example.wordie.models.Lesson
-import com.example.wordie.models.getSampleGrammarChapters
 import com.example.wordie.ui.grammar.GrammarLessonScreen
 import com.example.wordie.ui.grammar.GrammarResultScreen
 import com.example.wordie.ui.grammar.GrammarScreen
+import com.example.wordie.ui.grammar.GrammarViewModel
 import com.example.wordie.ui.statistics.StatisticsScreen
 import com.example.wordie.ui.theme.WordieTheme
 import com.example.wordie.utils.getDeviceDefaultLanguage
@@ -53,12 +53,13 @@ class MainActivity : ComponentActivity() {
             var playerName by remember { mutableStateOf("TOMMY") }
             var nativeLanguage by remember { mutableStateOf(getDeviceDefaultLanguage()) }
             var selectedLesson by remember { mutableStateOf<Lesson?>(null) }
-            var selectedGrammarChapter by remember { mutableStateOf<GrammarChapter?>(getSampleGrammarChapters().first()) }
             var currentUser by remember { mutableStateOf<AppUser?>(null) }
             var lessons by remember { mutableStateOf<List<Lesson>>(getSampleLessons()) }
 
             val authRepo = remember { AuthRepository() }
             val lessonRepo = remember { LessonRepository() }
+            val grammarViewModel = remember { GrammarViewModel() }
+            val grammarUiState by grammarViewModel.uiState.collectAsState()
             val scope = rememberCoroutineScope()
 
             LaunchedEffect(Unit) {
@@ -260,22 +261,31 @@ class MainActivity : ComponentActivity() {
 
                             // TAB 1: GRAMMAR (HOME) - MATCHING IMAGE 3
                             "grammar" -> GrammarScreen(
-                                streakDays = currentUser?.streak ?: 1,
+                                streakDays = currentUser?.streak ?: 0,
                                 currentLevel = 1,
+                                progressPercent = grammarUiState.currentChapter.progressPercent,
+                                chapters = grammarUiState.chapters,
+                                selectedChapterIndex = grammarUiState.currentChapterIndex,
                                 isDarkMode = isDarkMode,
                                 selectedTab = "grammar",
+                                onChapterSelect = { idx ->
+                                    grammarViewModel.selectChapterIndex(idx)
+                                },
                                 onTabClick = onTabClick,
                                 onStartLesson = { chapter ->
-                                    selectedGrammarChapter = chapter
+                                    grammarViewModel.startLesson(chapter)
                                     currentScreen = "grammar_lesson"
                                 }
                             )
 
                             // GRAMMAR LESSON SCREEN - MATCHING IMAGE 2
                             "grammar_lesson" -> GrammarLessonScreen(
-                                chapter = selectedGrammarChapter ?: getSampleGrammarChapters().first(),
+                                chapter = grammarViewModel.currentChapter,
                                 onBackClick = { currentScreen = "grammar" },
-                                onFinishLesson = { currentScreen = "grammar_result" }
+                                onFinishLesson = {
+                                    grammarViewModel.nextQuestionOrFinish()
+                                    currentScreen = "grammar_result"
+                                }
                             )
 
                             // GRAMMAR RESULT SCREEN - MATCHING IMAGE 1

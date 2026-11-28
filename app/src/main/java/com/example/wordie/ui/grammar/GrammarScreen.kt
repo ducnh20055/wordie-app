@@ -17,11 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -29,17 +26,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wordie.R
-
 import com.example.wordie.models.GrammarChapter
-import com.example.wordie.models.getSampleGrammarChapters
 import com.example.wordie.ui.components.BottomNavBar
 
 @Composable
 fun GrammarScreen(
-    streakDays: Int = 1,
+    streakDays: Int = 0,
     currentLevel: Int = 1,
+    progressPercent: Int = 0,
+    chapters: List<GrammarChapter> = emptyList(),
+    selectedChapterIndex: Int = 0,
     isDarkMode: Boolean = false,
     selectedTab: String = "grammar",
+    onChapterSelect: (Int) -> Unit = {},
     onTabClick: (String) -> Unit = {},
     onStartLesson: (GrammarChapter) -> Unit = {}
 ) {
@@ -47,10 +46,10 @@ fun GrammarScreen(
     val darkBg = Color(0xFF16171B)
     val cardDarkBg = Color(0xFF22242B)
     val purplePrimary = Color(0xFF8C5CFF)
-    val orangeMain = Color(0xFFFF8A00)
 
-    val chapters = remember { getSampleGrammarChapters() }
-    val currentChapter = chapters.first()
+    val safeChapters = if (chapters.isNotEmpty()) chapters else com.example.wordie.models.getSampleGrammarChapters()
+    val activeIndex = selectedChapterIndex.coerceIn(0, safeChapters.size - 1)
+    val currentChapter = safeChapters[activeIndex]
 
     Column(
         modifier = Modifier
@@ -59,14 +58,14 @@ fun GrammarScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        // TOP BAR
+        // TOP HEADER BAR
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 12.dp)
         ) {
-            // 1% BADGE
+            // PERCENT BADGE
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -75,7 +74,7 @@ fun GrammarScreen(
                     .padding(horizontal = 10.dp, vertical = 6.dp)
             ) {
                 Text(
-                    text = "1%",
+                    text = "${currentChapter.progressPercent}%",
                     fontFamily = playfulFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp,
@@ -147,12 +146,12 @@ fun GrammarScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // CIRCULAR STREAK GAUGE
+            // CIRCULAR STREAK GAUGE (RESET TO 0 FOR NEW ACCOUNTS)
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.size(170.dp)
+                modifier = Modifier.size(160.dp)
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     drawArc(
@@ -162,13 +161,15 @@ fun GrammarScreen(
                         useCenter = false,
                         style = Stroke(width = 14f)
                     )
-                    drawArc(
-                        color = Color(0xFFFFB74D),
-                        startAngle = 135f,
-                        sweepAngle = 90f,
-                        useCenter = false,
-                        style = Stroke(width = 14f)
-                    )
+                    if (streakDays > 0) {
+                        drawArc(
+                            color = Color(0xFFFFB74D),
+                            startAngle = 135f,
+                            sweepAngle = (270f * (streakDays / 7f).coerceAtMost(1f)),
+                            useCenter = false,
+                            style = Stroke(width = 14f)
+                        )
+                    }
                 }
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -181,7 +182,7 @@ fun GrammarScreen(
                         letterSpacing = 1.sp,
                         color = Color.LightGray
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(50.dp))
@@ -199,7 +200,50 @@ fun GrammarScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // CHAPTER SWITCHER NAVIGATION (PREV / NEXT)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(38.dp)
+                        .shadow(2.dp, CircleShape)
+                        .background(if (activeIndex > 0) cardDarkBg else Color.Transparent, CircleShape)
+                        .clickable(enabled = activeIndex > 0) {
+                            onChapterSelect(activeIndex - 1)
+                        }
+                ) {
+                    Text(text = "◀", fontSize = 16.sp, color = if (activeIndex > 0) Color.White else Color.Transparent)
+                }
+
+                Text(
+                    text = "Bài Học ${currentChapter.id} / ${safeChapters.size}",
+                    fontFamily = playfulFont,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = Color.LightGray
+                )
+
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(38.dp)
+                        .shadow(2.dp, CircleShape)
+                        .background(if (activeIndex < safeChapters.size - 1) cardDarkBg else Color.Transparent, CircleShape)
+                        .clickable(enabled = activeIndex < safeChapters.size - 1) {
+                            onChapterSelect(activeIndex + 1)
+                        }
+                ) {
+                    Text(text = "▶", fontSize = 16.sp, color = if (activeIndex < safeChapters.size - 1) Color.White else Color.Transparent)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // CIRCULAR LESSON CARD (MATCHING IMAGE 3)
             Box(
@@ -210,14 +254,14 @@ fun GrammarScreen(
                     .shadow(12.dp, CircleShape)
                     .background(cardDarkBg, CircleShape)
                     .border(3.dp, Color(0xFF3F4352), CircleShape)
-                    .padding(32.dp)
+                    .padding(28.dp)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // BADGE - HOÀN THÀNH BÀI HỌC
+                    // BADGE
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(50.dp))
@@ -225,7 +269,7 @@ fun GrammarScreen(
                             .padding(horizontal = 16.dp, vertical = 6.dp)
                     ) {
                         Text(
-                            text = "Hoàn thành bài học",
+                            text = if (currentChapter.starsEarned > 0) "Đã học" else "Bài học mới",
                             fontFamily = playfulFont,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
@@ -233,12 +277,12 @@ fun GrammarScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "Bài Học 1",
+                        text = "Bài Học ${currentChapter.id}",
                         fontFamily = playfulFont,
-                        fontSize = 13.sp,
+                        fontSize = 12.sp,
                         color = Color.LightGray
                     )
 
@@ -246,37 +290,42 @@ fun GrammarScreen(
                         text = currentChapter.title,
                         fontFamily = playfulFont,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
+                        fontSize = 19.sp,
                         color = Color.White,
                         textAlign = TextAlign.Center,
-                        lineHeight = 26.sp
+                        lineHeight = 24.sp
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    // 3 STARS
+                    // STARS
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "⭐", fontSize = 28.sp)
-                        Text(text = "☆", fontSize = 32.sp, color = Color.Gray)
-                        Text(text = "☆", fontSize = 28.sp, color = Color.Gray)
+                        repeat(3) { starIndex ->
+                            val isFilled = starIndex < currentChapter.starsEarned
+                            Text(
+                                text = if (isFilled) "⭐" else "☆",
+                                fontSize = if (starIndex == 1) 32.sp else 28.sp,
+                                color = if (isFilled) Color.Unspecified else Color.Gray
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    // BUTTON TIẾP TỤC
+                    // BUTTON TIẾP TỤC / HỌC NGAY
                     Button(
                         onClick = { onStartLesson(currentChapter) },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                         shape = RoundedCornerShape(50.dp),
                         modifier = Modifier
-                            .fillMaxWidth(0.75f)
-                            .height(48.dp)
+                            .fillMaxWidth(0.78f)
+                            .height(46.dp)
                     ) {
                         Text(
-                            text = "Tiếp tục",
+                            text = if (currentChapter.starsEarned > 0) "Học tiếp" else "Tiếp tục",
                             fontFamily = playfulFont,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
@@ -292,7 +341,7 @@ fun GrammarScreen(
         // NAV BAR DƯỚI
         BottomNavBar(
             selectedTab = selectedTab,
-            isDarkMode = true,
+            isDarkMode = isDarkMode,
             onTabClick = onTabClick
         )
     }
