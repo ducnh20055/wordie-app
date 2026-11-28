@@ -20,7 +20,13 @@ import com.example.wordie.data.AuthRepository
 import com.example.wordie.data.LessonRepository
 import com.example.wordie.data.getSampleLessons
 import com.example.wordie.models.AppUser
+import com.example.wordie.models.GrammarChapter
 import com.example.wordie.models.Lesson
+import com.example.wordie.models.getSampleGrammarChapters
+import com.example.wordie.ui.grammar.GrammarLessonScreen
+import com.example.wordie.ui.grammar.GrammarResultScreen
+import com.example.wordie.ui.grammar.GrammarScreen
+import com.example.wordie.ui.statistics.StatisticsScreen
 import com.example.wordie.ui.theme.WordieTheme
 import com.example.wordie.utils.getDeviceDefaultLanguage
 import com.example.wordie.utils.isNetworkAvailable
@@ -47,6 +53,7 @@ class MainActivity : ComponentActivity() {
             var playerName by remember { mutableStateOf("TOMMY") }
             var nativeLanguage by remember { mutableStateOf(getDeviceDefaultLanguage()) }
             var selectedLesson by remember { mutableStateOf<Lesson?>(null) }
+            var selectedGrammarChapter by remember { mutableStateOf<GrammarChapter?>(getSampleGrammarChapters().first()) }
             var currentUser by remember { mutableStateOf<AppUser?>(null) }
             var lessons by remember { mutableStateOf<List<Lesson>>(getSampleLessons()) }
 
@@ -103,16 +110,14 @@ class MainActivity : ComponentActivity() {
                         Toast.LENGTH_LONG
                     ).show()
                 }
-                currentScreen = "home"
+                currentScreen = "grammar"
             }
 
             val onTabClick: (String) -> Unit = { tab ->
                 when (tab) {
-                    "home" -> currentScreen = "home"
-                    "play" -> {
-                        selectedLesson = lessons.firstOrNull()
-                        showLessonModeSheet = true
-                    }
+                    "grammar", "home" -> currentScreen = "grammar"
+                    "vocabulary" -> currentScreen = "vocabulary"
+                    "statistics" -> currentScreen = "statistics"
                     "profile" -> currentScreen = "profile"
                 }
             }
@@ -128,7 +133,7 @@ class MainActivity : ComponentActivity() {
                         when (currentScreen) {
                             "checking" -> LoadingScreen(
                                 onLoadingFinished = {
-                                    currentScreen = if (currentUser != null || authRepo.isLoggedIn()) "home" else "start"
+                                    currentScreen = if (currentUser != null || authRepo.isLoggedIn()) "grammar" else "start"
                                 }
                             )
                             "start" -> StartScreen(onContinueClick = { currentScreen = "input" })
@@ -242,18 +247,48 @@ class MainActivity : ComponentActivity() {
                             "premium_offer" -> PremiumScreen(
                                 isDarkMode = isDarkMode,
                                 onCloseClick = {
-                                    currentScreen = "home"
+                                    currentScreen = "grammar"
                                 },
                                 onBuyClick = { _ ->
                                     isPremium = true
-                                    currentScreen = "home"
+                                    currentScreen = "grammar"
                                     scope.launch {
                                         currentUser?.uid?.let { authRepo.updatePremium(it, true) }
                                     }
                                 }
                             )
 
-                            "home" -> HomeScreen(
+                            // TAB 1: GRAMMAR (HOME) - MATCHING IMAGE 3
+                            "grammar" -> GrammarScreen(
+                                streakDays = currentUser?.streak ?: 1,
+                                currentLevel = 1,
+                                isDarkMode = isDarkMode,
+                                selectedTab = "grammar",
+                                onTabClick = onTabClick,
+                                onStartLesson = { chapter ->
+                                    selectedGrammarChapter = chapter
+                                    currentScreen = "grammar_lesson"
+                                }
+                            )
+
+                            // GRAMMAR LESSON SCREEN - MATCHING IMAGE 2
+                            "grammar_lesson" -> GrammarLessonScreen(
+                                chapter = selectedGrammarChapter ?: getSampleGrammarChapters().first(),
+                                onBackClick = { currentScreen = "grammar" },
+                                onFinishLesson = { currentScreen = "grammar_result" }
+                            )
+
+                            // GRAMMAR RESULT SCREEN - MATCHING IMAGE 1
+                            "grammar_result" -> GrammarResultScreen(
+                                onContinueClick = {
+                                    handleCompleteLesson()
+                                    currentScreen = "grammar"
+                                },
+                                onCloseClick = { currentScreen = "grammar" }
+                            )
+
+                            // TAB 2: VOCABULARY (CURRENT HOMESCREEN)
+                            "vocabulary", "home" -> HomeScreen(
                                 playerName = playerName,
                                 playerLevel = playerLevel,
                                 isDarkMode = isDarkMode,
@@ -274,6 +309,17 @@ class MainActivity : ComponentActivity() {
                                     authRepo.signOut()
                                     currentScreen = "signin"
                                 }
+                            )
+
+                            // TAB 3: STATISTICS
+                            "statistics" -> StatisticsScreen(
+                                streakDays = currentUser?.streak ?: 1,
+                                totalWords = 120,
+                                accuracyPercent = 92,
+                                studyTimeMins = 45,
+                                isDarkMode = isDarkMode,
+                                selectedTab = "statistics",
+                                onTabClick = onTabClick
                             )
 
                             // 1. THẺ TỪ (FLASHCARD)
