@@ -2,6 +2,7 @@ package com.example.wordie
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +25,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,9 +56,24 @@ fun InputScreen(
     val orangeDark = Color(0xFFE56E00)
     val orangeLightBg = Color(0xFFFFF1E0)
     val orangeShadow = Color(0xFFC85A00)
+    val errorColor = Color(0xFFFF3333)
 
     var name by remember { mutableStateOf("") }
-    var age by remember { mutableIntStateOf(10) }
+    var nameError by remember { mutableStateOf<String?>(null) }
+
+    var ageText by remember { mutableStateOf("10") }
+    var ageError by remember { mutableStateOf<String?>(null) }
+
+    fun validateAge(input: String): String? {
+        val parsed = input.toIntOrNull()
+        return when {
+            input.isBlank() -> "Vui lòng nhập số tuổi!"
+            parsed == null -> "Số tuổi không hợp lệ!"
+            parsed < 6 -> "Tuổi tối thiểu là 6 tuổi!"
+            parsed > 100 -> "Tuổi tối đa là 100 tuổi!"
+            else -> null
+        }
+    }
 
     Box(
         modifier = modifier
@@ -72,7 +87,7 @@ fun InputScreen(
                 .fillMaxSize()
                 .padding(horizontal = 32.dp)
         ) {
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(50.dp))
 
             // TIÊU ĐỀ
             Text(
@@ -92,7 +107,7 @@ fun InputScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // LABEL - YOUR NAME
             Text(
@@ -101,7 +116,7 @@ fun InputScreen(
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 letterSpacing = 1.sp,
-                color = orangeDark,
+                color = if (nameError != null) errorColor else orangeDark,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -110,7 +125,12 @@ fun InputScreen(
             // Ô INPUT TÊN
             OutlinedTextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = {
+                    name = it
+                    if (it.trim().isNotEmpty()) {
+                        nameError = null
+                    }
+                },
                 placeholder = {
                     Text(
                         text = "ENTER YOUR NAME",
@@ -129,10 +149,10 @@ fun InputScreen(
                 ),
                 shape = RoundedCornerShape(24.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = orangeMain,
-                    unfocusedBorderColor = orangeMain,
-                    focusedContainerColor = orangeLightBg,
-                    unfocusedContainerColor = orangeLightBg,
+                    focusedBorderColor = if (nameError != null) errorColor else orangeMain,
+                    unfocusedBorderColor = if (nameError != null) errorColor else orangeMain,
+                    focusedContainerColor = if (nameError != null) Color(0xFFFFEBEE) else orangeLightBg,
+                    unfocusedContainerColor = if (nameError != null) Color(0xFFFFEBEE) else orangeLightBg,
                     cursorColor = orangeMain
                 ),
                 modifier = Modifier
@@ -141,71 +161,102 @@ fun InputScreen(
                     .shadow(4.dp, RoundedCornerShape(24.dp))
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            if (nameError != null) {
+                Text(
+                    text = "⚠️ ${nameError!!}",
+                    fontFamily = playfulFont,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    color = errorColor,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             // LABEL - YOUR AGE
             Text(
-                text = "YOUR AGE",
+                text = "YOUR AGE (6 - 100)",
                 fontFamily = playfulFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 letterSpacing = 1.sp,
-                color = orangeDark,
+                color = if (ageError != null) errorColor else orangeDark,
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // TUỔI SCROLL LÊN XUỐNG - MŨI TÊN CAM
+            // TUỔI TYPE HOẶC BẤM NÚT TĂNG GIẢM
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Ô HIỂN THỊ TUỔI
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .width(140.dp)
-                        .height(110.dp)
-                        .background(orangeLightBg, RoundedCornerShape(24.dp))
-                        .border(2.dp, orangeMain, RoundedCornerShape(24.dp))
-                ) {
-                    Text(
-                        text = age.toString(),
+                // Ô NHẬP TUỔI TYPE
+                OutlinedTextField(
+                    value = ageText,
+                    onValueChange = { input ->
+                        if (input.length <= 3 && input.all { it.isDigit() }) {
+                            ageText = input
+                            ageError = validateAge(input)
+                        }
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    textStyle = TextStyle(
                         fontFamily = playfulFont,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 56.sp,
-                        color = orangeMain,
+                        fontSize = 44.sp,
+                        color = if (ageError != null) errorColor else orangeMain,
                         textAlign = TextAlign.Center,
-                        style = TextStyle(
-                            shadow = Shadow(
-                                color = orangeShadow,
-                                offset = Offset(0f, 3f),
-                                blurRadius = 0f
-                            )
+                        shadow = Shadow(
+                            color = if (ageError != null) Color.Red.copy(alpha = 0.3f) else orangeShadow,
+                            offset = Offset(0f, 3f),
+                            blurRadius = 0f
                         )
-                    )
-                }
+                    ),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = if (ageError != null) errorColor else orangeMain,
+                        unfocusedBorderColor = if (ageError != null) errorColor else orangeMain,
+                        focusedContainerColor = if (ageError != null) Color(0xFFFFEBEE) else orangeLightBg,
+                        unfocusedContainerColor = if (ageError != null) Color(0xFFFFEBEE) else orangeLightBg,
+                        cursorColor = orangeMain
+                    ),
+                    modifier = Modifier
+                        .width(140.dp)
+                        .height(100.dp)
+                        .shadow(4.dp, RoundedCornerShape(24.dp))
+                )
 
                 Spacer(modifier = Modifier.width(20.dp))
 
                 // 2 NÚT MŨI TÊN LÊN / XUỐNG
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // MŨI TÊN LÊN - TĂNG TUỔI
                     IconButton(
-                        onClick = { if (age < 99) age++ },
+                        onClick = {
+                            val curr = ageText.toIntOrNull() ?: 10
+                            if (curr < 100) {
+                                val next = curr + 1
+                                ageText = next.toString()
+                                ageError = validateAge(next.toString())
+                            }
+                        },
                         modifier = Modifier
-                            .size(52.dp)
+                            .size(46.dp)
                             .shadow(4.dp, CircleShape)
                             .background(orangeMain, CircleShape)
                     ) {
                         Text(
                             text = "▲",
-                            fontSize = 20.sp,
+                            fontSize = 18.sp,
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
@@ -213,15 +264,22 @@ fun InputScreen(
 
                     // MŨI TÊN XUỐNG - GIẢM TUỔI
                     IconButton(
-                        onClick = { if (age > 3) age-- },
+                        onClick = {
+                            val curr = ageText.toIntOrNull() ?: 10
+                            if (curr > 1) {
+                                val next = curr - 1
+                                ageText = next.toString()
+                                ageError = validateAge(next.toString())
+                            }
+                        },
                         modifier = Modifier
-                            .size(52.dp)
+                            .size(46.dp)
                             .shadow(4.dp, CircleShape)
                             .background(orangeMain, CircleShape)
                     ) {
                         Text(
                             text = "▼",
-                            fontSize = 20.sp,
+                            fontSize = 18.sp,
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
@@ -229,21 +287,46 @@ fun InputScreen(
                 }
             }
 
-            Text(
-                text = "Tap ▲ ▼ to change your age",
-                fontFamily = playfulFont,
-                fontSize = 13.sp,
-                color = Color(0xFF9E9E9E),
-                modifier = Modifier.padding(top = 10.dp)
-            )
+            // HIỂN THỊ THÔNG BÁO LỖI ĐỎ NẾU NHẬP SAI TUỔI
+            if (ageError != null) {
+                Text(
+                    text = "⚠️ ${ageError!!}",
+                    fontFamily = playfulFont,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = errorColor,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 10.dp)
+                )
+            } else {
+                Text(
+                    text = "Type age or tap ▲ ▼ to change",
+                    fontFamily = playfulFont,
+                    fontSize = 13.sp,
+                    color = Color(0xFF9E9E9E),
+                    modifier = Modifier.padding(top = 10.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // NÚT CONTINUE - GIỐNG Y MÀN START
+            // NÚT CONTINUE
             Button(
-                onClick = { onContinueClick(name, age) },
+                onClick = {
+                    val cleanName = name.trim()
+                    val nameErr = if (cleanName.isEmpty()) "Vui lòng nhập tên của bạn!" else null
+                    val ageErr = validateAge(ageText)
+
+                    nameError = nameErr
+                    ageError = ageErr
+
+                    if (nameErr == null && ageErr == null) {
+                        val validAge = ageText.toInt()
+                        onContinueClick(cleanName, validAge)
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = orangeMain,
+                    containerColor = if (nameError != null || ageError != null) Color(0xFFBDBDBD) else orangeMain,
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(50.dp),

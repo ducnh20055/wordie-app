@@ -20,32 +20,33 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wordie.ui.theme.WordieTheme
 
 @Composable
 fun StartScreen(
     onContinueClick: () -> Unit
 ) {
-    // Font vui nhộn giống logo
     val playfulFont = FontFamily(Font(R.font.fredoka_bold, FontWeight.Bold))
 
     val orangeMain = Color(0xFFFF8A00)
-    val orangeDark = Color(0xFFE56E00)
     val orangeShadow = Color(0xFFC85A00)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(Color.White)
+            .statusBarsPadding()
+            .navigationBarsPadding(),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 32.dp)
+                .padding(horizontal = 32.dp, vertical = 24.dp)
         ) {
             Spacer(modifier = Modifier.weight(1f))
 
@@ -54,8 +55,7 @@ fun StartScreen(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Wordie Logo",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .size(240.dp)
+                modifier = Modifier.size(180.dp)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -65,24 +65,23 @@ fun StartScreen(
                 text = "WELCOME TO\nWORDIE",
                 fontFamily = playfulFont,
                 fontWeight = FontWeight.Bold,
-                fontSize = 42.sp,
-                lineHeight = 48.sp,
+                fontSize = 36.sp,
+                lineHeight = 42.sp,
                 letterSpacing = 1.sp,
                 textAlign = TextAlign.Center,
                 color = orangeMain,
                 style = TextStyle(
                     shadow = Shadow(
                         color = orangeShadow,
-                        offset = Offset(0f, 6f),
+                        offset = Offset(0f, 4f),
                         blurRadius = 0f
                     )
                 )
             )
 
-            // Thêm lớp shadow thứ 2 để nổi 3D hơn
-            // Nếu muốn đậm hơn, tăng offset lên 8f
-
             Spacer(modifier = Modifier.weight(1f))
+
+            Spacer(modifier = Modifier.height(32.dp))
 
             // NÚT CONTINUE
             Button(
@@ -94,7 +93,7 @@ fun StartScreen(
                 shape = RoundedCornerShape(50.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(58.dp)
+                    .height(56.dp)
             ) {
                 Text(
                     text = "CONTINUE  ->",
@@ -104,8 +103,14 @@ fun StartScreen(
                     letterSpacing = 1.5.sp
                 )
             }
-
-            Spacer(modifier = Modifier.height(48.dp))
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun StartScreenPreview() {
+    WordieTheme {
+        StartScreen(onContinueClick = {})
     }
 }

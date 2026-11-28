@@ -30,6 +30,11 @@ class LessonRepository {
 
     suspend fun uploadLessonsToFirebase(): Result<Int> {
         return try {
+            val checkSnap = db.collection("lessons").limit(1).get().await()
+            if (!checkSnap.isEmpty) {
+                Log.d("LESSON", "Firebase đã có dữ liệu bài học, không cần upload lại.")
+                return Result.success(0)
+            }
             val lessons = getSampleLessons()
             for (lesson in lessons) {
                 val lessonData = mapOf(

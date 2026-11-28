@@ -7,10 +7,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -40,6 +43,140 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wordie.ui.theme.WordieTheme
 
+@Composable
+fun PremiumScreen(
+    isDarkMode: Boolean,
+    onCloseClick: () -> Unit,
+    onBuyClick: (packageName: String) -> Unit
+) {
+    val playfulFont = FontFamily(Font(R.font.fredoka_bold, FontWeight.Bold))
+    val orangeMain = Color(0xFFFF8A00)
+    val goldColor = Color(0xFFFFC107)
+
+    val bgColor = if (isDarkMode) Color(0xFF1A1A1A) else Color.White
+    val cardBg = if (isDarkMode) Color(0xFF2D2D2D) else Color(0xFFFFF1E0)
+    val textColor = if (isDarkMode) Color.White else Color(0xFF333333)
+    val subTextColor = if (isDarkMode) Color(0xFFBDBDBD) else Color(0xFF757575)
+
+    var selectedPackage by remember { mutableStateOf("YEARLY") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(bgColor)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 24.dp)
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // TOP BAR - NÚT X
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Spacer(modifier = Modifier.weight(1f))
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(40.dp)
+                    .shadow(2.dp, CircleShape)
+                    .background(cardBg, CircleShape)
+                    .clickable { onCloseClick() }
+            ) {
+                Text(
+                    text = "✕",
+                    fontFamily = playfulFont,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = textColor
+                )
+            }
+        }
+
+        // LOGO + TIÊU ĐỀ
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(80.dp)
+                    .shadow(6.dp, CircleShape)
+                    .background(goldColor, CircleShape)
+            ) {
+                Text(text = "👑", fontSize = 40.sp)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "WORDIE PRO",
+                fontFamily = playfulFont,
+                fontWeight = FontWeight.Bold,
+                fontSize = 32.sp,
+                color = orangeMain
+            )
+            Text(
+                text = "Học không giới hạn, không quảng cáo",
+                fontFamily = playfulFont,
+                fontSize = 14.sp,
+                color = subTextColor,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // 4 LỢI ÍCH
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(cardBg, RoundedCornerShape(20.dp))
+                .padding(16.dp)
+        ) {
+            Text(text = "✨ Mở khóa tất cả bài học", fontFamily = playfulFont, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = textColor)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "🚫 Không quảng cáo", fontFamily = playfulFont, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = textColor)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "🔊 Phát âm chuẩn AI + Luyện nói", fontFamily = playfulFont, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = textColor)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "📥 Tải bài học học offline", fontFamily = playfulFont, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = textColor)
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // 3 GÓI
+        PremiumPackageCard(title = "1 THÁNG", price = "49.000đ", subPrice = "49.000đ / tháng", isSelected = selectedPackage == "MONTHLY", isBest = false, isDarkMode = isDarkMode, onClick = { selectedPackage = "MONTHLY" })
+        Spacer(modifier = Modifier.height(12.dp))
+        PremiumPackageCard(title = "1 NĂM", price = "299.000đ", subPrice = "Chỉ 25.000đ / tháng - Tiết kiệm 49%", isSelected = selectedPackage == "YEARLY", isBest = true, isDarkMode = isDarkMode, onClick = { selectedPackage = "YEARLY" })
+        Spacer(modifier = Modifier.height(12.dp))
+        PremiumPackageCard(title = "TRỌN ĐỜI", price = "999.000đ", subPrice = "Trả 1 lần - Dùng mãi mãi", isSelected = selectedPackage == "LIFETIME", isBest = false, isDarkMode = isDarkMode, onClick = { selectedPackage = "LIFETIME" })
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = { onBuyClick(selectedPackage) },
+            colors = ButtonDefaults.buttonColors(containerColor = orangeMain, contentColor = Color.White),
+            shape = RoundedCornerShape(50.dp),
+            modifier = Modifier.fillMaxWidth().height(58.dp)
+        ) {
+            Text(text = "MUA NGAY - $selectedPackage", fontFamily = playfulFont, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Hủy bất cứ lúc nào. Không bị trừ tiền nếu hủy trước 7 ngày.",
+            fontFamily = playfulFont,
+            fontSize = 12.sp,
+            color = subTextColor,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PremiumBottomSheet(
@@ -61,7 +198,6 @@ fun PremiumBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = {
-            // VUỐT XUỐNG HOẶC BẤM BACK -> FALSE
             onCloseClick()
         },
         sheetState = sheetState,
@@ -83,7 +219,6 @@ fun PremiumBottomSheet(
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 24.dp)
         ) {
-            // TOP BAR - NÚT X
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -107,7 +242,6 @@ fun PremiumBottomSheet(
                 }
             }
 
-            // LOGO + TIÊU ĐỀ
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
@@ -140,7 +274,6 @@ fun PremiumBottomSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 4 LỢI ÍCH - TRONG ẢNH CỦA M
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,7 +291,6 @@ fun PremiumBottomSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 3 GÓI
             PremiumPackageCard(title = "1 THÁNG", price = "49.000đ", subPrice = "49.000đ / tháng", isSelected = selectedPackage == "MONTHLY", isBest = false, isDarkMode = isDarkMode, onClick = { selectedPackage = "MONTHLY" })
             Spacer(modifier = Modifier.height(12.dp))
             PremiumPackageCard(title = "1 NĂM", price = "299.000đ", subPrice = "Chỉ 25.000đ / tháng - Tiết kiệm 49%", isSelected = selectedPackage == "YEARLY", isBest = true, isDarkMode = isDarkMode, onClick = { selectedPackage = "YEARLY" })

@@ -219,6 +219,25 @@ class AuthRepository {
         }
     }
 
+    suspend fun updateOnboardingInfo(
+        uid: String,
+        nativeLanguage: String? = null,
+        learningReason: String? = null,
+        targetTime: String? = null
+    ) {
+        try {
+            val updates = mutableMapOf<String, Any>()
+            if (!nativeLanguage.isNullOrBlank()) updates["nativeLanguage"] = nativeLanguage
+            if (!learningReason.isNullOrBlank()) updates["learningReason"] = learningReason
+            if (!targetTime.isNullOrBlank()) updates["targetTime"] = targetTime
+            if (updates.isNotEmpty()) {
+                db.collection("users").document(uid).set(updates, SetOptions.merge()).await()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     suspend fun updatePremium(uid: String, isPremium: Boolean) {
         try {
             db.collection("users").document(uid).set(mapOf("isPremium" to isPremium), SetOptions.merge()).await()
@@ -237,18 +256,27 @@ class AuthRepository {
 
     suspend fun completeLesson(uid: String, currentUser: AppUser, starsEarned: Int = 1): AppUser {
         return try {
-            val (today, yesterday) = getTodayAndYesterday()
-            val effectiveStreak = getEffectiveStreak(currentUser.streak, currentUser.lastActiveDate)
+            val docRef = db.collection("users").document(uid)
+            val snap = docRef.get().await()
 
-            val newStreak = when (currentUser.lastActiveDate) {
+            val (today, yesterday) = getTodayAndYesterday()
+
+            val currentStars = (snap.getLong("stars") ?: currentUser.stars.toLong()).toInt()
+            val currentXp = (snap.getLong("xp") ?: currentUser.xp.toLong()).toInt()
+            val currentLessonsDone = (snap.getLong("lessonsDone") ?: currentUser.lessonsDone.toLong()).toInt()
+            val currentStreak = (snap.getLong("streak") ?: currentUser.streak.toLong()).toInt()
+            val lastActiveDate = snap.getString("lastActiveDate") ?: currentUser.lastActiveDate
+
+            val effectiveStreak = getEffectiveStreak(currentStreak, lastActiveDate)
+            val newStreak = when (lastActiveDate) {
                 today -> if (effectiveStreak > 0) effectiveStreak else 1
                 yesterday -> effectiveStreak + 1
                 else -> 1
             }
 
-            val newStars = currentUser.stars + starsEarned
-            val newXp = currentUser.xp + (starsEarned * 10)
-            val newLessonsDone = currentUser.lessonsDone + 1
+            val newStars = currentStars + starsEarned
+            val newXp = currentXp + (starsEarned * 10)
+            val newLessonsDone = currentLessonsDone + 1
 
             val updateData = mapOf(
                 "stars" to newStars,
@@ -258,7 +286,7 @@ class AuthRepository {
                 "lastActiveDate" to today
             )
 
-            db.collection("users").document(uid).set(updateData, SetOptions.merge()).await()
+            docRef.set(updateData, SetOptions.merge()).await()
 
             currentUser.copy(
                 stars = newStars,
@@ -268,8 +296,9 @@ class AuthRepository {
                 lastActiveDate = today
             )
         } catch (e: Exception) {
-            e.printStackTrace()
-            currentUser
+            Log.e("AUTH", "Lỗi completeLesson: ${e.message}", e)
+            val updatedLessonsDone = currentUser.lessonsDone + 1
+            currentUser.copy(lessonsDone = updatedLessonsDone)
         }
     }
 }

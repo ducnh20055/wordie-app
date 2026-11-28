@@ -17,5 +17,8 @@ data class AppUser(
     val lessonsDone: Int = 0,
     val unlockedPets: List<String> = listOf("puppy"),
     val lastFedTimestamp: Long = 0L,
+    val nativeLanguage: String = "Vietnamese",
+    val learningReason: String = "Travel & Culture",
+    val targetTime: String = "1 Month",
     val createdAt: Long = System.currentTimeMillis()
 )
